@@ -23,6 +23,8 @@ export interface IUser extends Document {
   averageRating: number;
   // Collaboration platform fields
   profileScore: number; // Overall profile completeness score
+  badges?: string[];
+  credits?: number;
   streak: number; // Current active streak (days)
   longestStreak: number;
   casesAnalyzed: number;
@@ -148,6 +150,12 @@ const UserSchema = new Schema<IUser>({
     min: [0, 'Profile score cannot be negative'],
     max: [100, 'Profile score cannot exceed 100']
   },
+  badges: [{ type: String }],
+  credits: {
+    type: Number,
+    default: 0,
+    min: [0, 'Credits cannot be negative']
+  },
   streak: {
     type: Number,
     default: 0,
@@ -202,13 +210,13 @@ const UserSchema = new Schema<IUser>({
   // Doctor specific fields
   specialization: {
     type: String,
-    required: function(this: IUser) {
+    required: function (this: IUser) {
       return this.userType === 'doctor';
     }
   },
   licenseNumber: {
     type: String,
-    required: function(this: IUser) {
+    required: function (this: IUser) {
       return this.userType === 'doctor';
     },
     sparse: true // Allow null values to be non-unique
@@ -235,7 +243,7 @@ const UserSchema = new Schema<IUser>({
   // Intern specific fields
   medicalSchool: {
     type: String,
-    required: function(this: IUser) {
+    required: function (this: IUser) {
       return this.userType === 'intern';
     }
   },
@@ -243,7 +251,7 @@ const UserSchema = new Schema<IUser>({
     type: Number,
     min: [1, 'Year of study must be at least 1'],
     max: [7, 'Year of study cannot exceed 7'],
-    required: function(this: IUser) {
+    required: function (this: IUser) {
       return this.userType === 'intern';
     }
   },
@@ -282,7 +290,7 @@ const UserSchema = new Schema<IUser>({
 });
 
 // Hash password before saving
-UserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
@@ -297,7 +305,7 @@ UserSchema.pre('save', async function(next) {
 });
 
 // Compare password method
-UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 

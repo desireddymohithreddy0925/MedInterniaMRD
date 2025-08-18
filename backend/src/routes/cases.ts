@@ -11,7 +11,12 @@ import {
   addFollowUp,
   getCaseFollowUps,
   generateAISuggestions,
-  getCaseAISuggestions
+  getCaseAISuggestions,
+  pinComment,
+  unpinComment,
+  getPinnedComments,
+  toggleRepostPermission,
+  repostCase,
 } from '../controllers/caseController';
 import { authenticate } from '../middleware/auth';
 
@@ -39,4 +44,13 @@ router.get('/:id/follow-ups', authenticate, getCaseFollowUps);
 router.post('/:id/ai-suggestions', authenticate, generateAISuggestions);
 router.get('/:id/ai-suggestions', authenticate, getCaseAISuggestions);
 
+// Pin/unpin comments (doctor only)
+router.post('/:caseId/comments/:commentId/pin', authenticate, pinComment);
+router.post('/:caseId/comments/:commentId/unpin', authenticate, unpinComment);
+// Get all pinned comments for a case
+router.get('/:caseId/pinned-comments', getPinnedComments);
+// Toggle repost permission (case owner only)
+router.patch('/:id/repost-permission', authenticate, toggleRepostPermission);
+// Repost a case (if allowed)
+router.post('/:id/repost', authenticate, repostCase);
 export default router;
