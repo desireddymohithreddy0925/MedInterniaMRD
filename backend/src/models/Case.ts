@@ -8,6 +8,7 @@ export interface IComment extends Document {
   likes: mongoose.Types.ObjectId[];
   rating?: number; // Rating given by doctor to intern comments (1-5)
   ratedBy?: mongoose.Types.ObjectId; // Doctor who gave the rating
+  pinned?: boolean; // Indicates if the comment is pinned
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +35,7 @@ export interface ICase extends Document {
   isActive: boolean;
   isPatientCase: boolean; // True if posted by patient
   pointsAwarded: number; // Points given to doctor for posting
+  canRepost: boolean; // Indicates if the case can be reposted
   followUps: {
     author: mongoose.Types.ObjectId;
     content: string;
@@ -82,6 +84,10 @@ const CommentSchema = new Schema<IComment>({
   ratedBy: {
     type: Schema.Types.ObjectId,
     ref: 'User'
+  },
+  pinned: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
@@ -175,6 +181,10 @@ const CaseSchema = new Schema<ICase>({
     default: 0,
     min: [0, 'Points awarded cannot be negative']
   },
+    canRepost: {
+      type: Boolean,
+      default: false
+    },
   followUps: [{
     author: {
       type: Schema.Types.ObjectId,

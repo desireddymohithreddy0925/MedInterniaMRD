@@ -7,7 +7,7 @@ import { AuthRequest } from '../middleware/auth';
 export const createCase = async (req: AuthRequest, res: Response) => {
   try {
     const user = req.user as { _id: string; userType: string; specialization?: string };
-    
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -292,7 +292,7 @@ export const updateCase = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error('Update case error:', error);
-    
+
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map((err: any) => err.message);
       return res.status(400).json({
@@ -419,6 +419,101 @@ export const addComment = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Pin a comment (doctor only)
+export const pinComment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { caseId, commentId } = req.params;
+    const user = req.user;
+    if (!user || user.userType !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can pin comments' });
+    }
+    const caseDoc = await Case.findById(caseId);
+    if (!caseDoc) return res.status(404).json({ success: false, message: 'Case not found' });
+    const comment = caseDoc.comments.find((c: any) => c._id?.toString() === commentId);
+    if (!comment) return res.status(404).json({ success: false, message: 'Comment not found' });
+    comment.pinned = true;
+    await caseDoc.save();
+    res.json({ success: true, comment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// Unpin a comment (doctor only)
+export const unpinComment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { caseId, commentId } = req.params;
+    const user = req.user;
+    if (!user || user.userType !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can unpin comments' });
+    }
+    const caseDoc = await Case.findById(caseId);
+    if (!caseDoc) return res.status(404).json({ success: false, message: 'Case not found' });
+    const comment = caseDoc.comments.find((c: any) => c._id?.toString() === commentId);
+    if (!comment) return res.status(404).json({ success: false, message: 'Comment not found' });
+    comment.pinned = false;
+    await caseDoc.save();
+    res.json({ success: true, comment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// Get all pinned comments for a case
+export const getPinnedComments = async (req: AuthRequest, res: Response) => {
+  try {
+    const { caseId } = req.params;
+    const caseDoc = await Case.findById(caseId);
+    if (!caseDoc) return res.status(404).json({ success: false, message: 'Case not found' });
+    const pinnedComments = caseDoc.comments.filter((c: any) => c.pinned);
+    res.json({ success: true, pinnedComments });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// Toggle repost permission (case owner only)
+export const toggleRepostPermission = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+    const caseDoc = await Case.findById(id);
+    if (!caseDoc) return res.status(404).json({ success: false, message: 'Case not found' });
+    if (!user || (caseDoc.doctor.toString() !== (user._id as string).toString())) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+    caseDoc.canRepost = !caseDoc.canRepost;
+    await caseDoc.save();
+    res.json({ success: true, canRepost: caseDoc.canRepost });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// Repost a case (if allowed)
+export const repostCase = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+    const caseDoc = await Case.findById(id);
+    if (!caseDoc || !caseDoc.canRepost) {
+      return res.status(403).json({ success: false, message: 'Repost not allowed' });
+    }
+    // Duplicate case logic (simplified)
+    const newCase = new Case({
+      ...caseDoc.toObject(),
+      _id: undefined,
+      doctor: user?._id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    await newCase.save();
+    res.json({ success: true, case: newCase });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 // Like/Unlike case
 export const toggleLike = async (req: AuthRequest, res: Response) => {
   try {
@@ -452,7 +547,7 @@ export const toggleLike = async (req: AuthRequest, res: Response) => {
     const likeIndex = caseData.likes.findIndex(like => like.toString() === userIdString);
 
     let isLiked = false;
-    
+
     if (likeIndex > -1) {
       // Unlike
       caseData.likes.splice(likeIndex, 1);
@@ -648,9 +743,9 @@ export const generateAISuggestions = async (req: AuthRequest, res: Response) => 
       ],
       isActive: true
     })
-    .select('title description specialization difficulty tags')
-    .limit(5)
-    .sort({ createdAt: -1 });
+      .select('title description specialization difficulty tags')
+      .limit(5)
+      .sort({ createdAt: -1 });
 
     // Update case with AI suggestions
     caseData.aiSuggestions = {

@@ -30,53 +30,46 @@ export const getUserProfile = async (req: Request, res: Response) => {
       });
     }
 
-    // Get user's badges
-    const badges = await UserBadge.find({ user: userId, isVisible: true })
-      .populate('badge')
-      .sort({ earnedAt: -1 })
-      .limit(10);
-
-    // Get user's recent cases (for doctors and patients)
-    let recentCases: CaseSummary[] = [];
-    if (user.userType === 'doctor' || user.userType === 'patient') {
-      const cases = await Case.find({ doctor: userId })
-        .select('title createdAt difficulty specialization')
-        .sort({ createdAt: -1 })
-        .limit(5);
-
-      recentCases = cases.map((c: any) => ({
-        _id: c._id.toString(),
-        title: c.title,
-        createdAt: c.createdAt,
-        difficulty: c.difficulty,
-        specialization: c.specialization
-      }));
-    }
-
-    // Calculate profile completeness score
-    const profileFields = [
-      'firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 
-      'bio', 'profilePicture'
+    // Define all profile fields you want to check for completeness
+    const allFields = [
+      'firstName',
+      'lastName',
+      'email',
+      'medicalSchool',
+      'specialization',
+      'profilePicture',
+      'bio'
+      // Add other fields as needed
     ];
-    
-    const userTypeFields = {
-      doctor: ['specialization', 'licenseNumber', 'experience', 'qualifications'],
-      intern: ['medicalSchool', 'yearOfStudy', 'interests'],
-      patient: ['medicalHistory', 'emergencyContact']
-    };
-
-    const allFields = [...profileFields, ...(userTypeFields[user.userType] || [])];
+    // Count fields that are completed (not null/undefined/empty)
     const completedFields = allFields.filter(field => {
       const value = (user as any)[field];
-      return value && (Array.isArray(value) ? value.length > 0 : true);
+      return value !== undefined && value !== null && value !== '';
     });
-
     const profileScore = Math.round((completedFields.length / allFields.length) * 100);
 
     // Update profile score if changed
     if (user.profileScore !== profileScore) {
       await User.findByIdAndUpdate(userId, { profileScore });
     }
+
+    // Fetch badges for the user
+    const badges = await UserBadge.find({ user: userId, isVisible: true })
+      .populate('badge')
+      .sort({ earnedAt: -1 });
+
+    // Fetch recent cases for the user
+    const recentCases = (await Case.find({ doctor: userId })
+      .select('_id title createdAt difficulty specialization')
+      .sort({ createdAt: -1 })
+      .limit(5))
+      .map((c: any) => ({
+        _id: c._id.toString(),
+        title: c.title,
+        createdAt: c.createdAt,
+        difficulty: c.difficulty,
+        specialization: c.specialization
+      })) as CaseSummary[];
 
     res.json({
       success: true,
@@ -379,4 +372,70 @@ export const createUser = (req: Request, res: Response) => {
     success: true,
     data: newUser
   });
+};
+
+// Grant contributor badge if points or recommended by doctor
+export const grantContributorBadge = async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (user.badges && user.badges.includes('CONTRIBUTOR')) {
+      return res.status(400).json({ success: false, message: 'Already has badge' });
+    }
+    const recommendedByDoctor = req.body.recommendedByDoctor;
+    if (user.points >= 50 || recommendedByDoctor) {
+      user.badges = user.badges || [];
+      user.badges.push('CONTRIBUTOR');
+      await user.save();
+      res.json({ success: true, badges: user.badges });
+    } else {
+      res.status(403).json({ success: false, message: 'Insufficient points or recommendation' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// Upgrade intern profile to doctor if credits threshold met
+export const upgradeProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: user not found in request' });
+    }
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (user.userType !== 'intern') return res.status(400).json({ success: false, message: 'Not an intern' });
+    if (typeof user.credits !== 'number' || user.credits < 100) return res.status(403).json({ success: false, message: 'Insufficient credits' });
+    user.userType = 'doctor';
+    await user.save();
+    res.json({ success: true, userType: user.userType });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// Doctor awards points to intern as recommendation
+export const awardPointsToIntern = async (req: AuthRequest, res: Response) => {
+  try {
+    const doctor = req.user;
+    const { internId } = req.params;
+    const { points } = req.body;
+    if (!doctor || doctor.userType !== 'doctor') {
+      return res.status(403).json({ success: false, message: 'Only doctors can award points.' });
+    }
+    if (typeof points !== 'number' || points <= 0) {
+      return res.status(400).json({ success: false, message: 'Points must be a positive number.' });
+    }
+    const intern = await User.findById(internId);
+    if (!intern || intern.userType !== 'intern') {
+      return res.status(404).json({ success: false, message: 'Intern not found.' });
+    }
+    intern.points = (intern.points || 0) + points;
+    await intern.save();
+    res.json({ success: true, points: intern.points });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 };
