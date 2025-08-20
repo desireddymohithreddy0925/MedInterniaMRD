@@ -42,9 +42,16 @@ export default function CaseDetail() {
   const handleDiscussion = async () => {
     try {
       const token = localStorage.getItem('token');
-      await api.post(`/cases/${id}/comments`, { content: comment, replyTo: replyTo?._id }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // If replying, post as a reply to the selected comment
+      if (replyTo) {
+        await api.post(`/cases/${id}/comments/${replyTo._id}/reply`, { content: replyContent }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await api.post(`/cases/${id}/comments`, { content: comment }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
       setComment('');
       setReplyTo(null);
       setReplyContent('');
@@ -67,7 +74,6 @@ export default function CaseDetail() {
 
   async function submitReply() {
     if (!replyContent.trim()) return;
-    setComment(replyContent);
     await handleDiscussion();
   }
 
@@ -264,7 +270,8 @@ export default function CaseDetail() {
           </Box>
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
             <MenuItem onClick={() => { setAnchorEl(null); handleReply(selectedComment?.comment); }}>Reply</MenuItem>
-            {isAuthor && (
+            {/* Only show pin for owner and for top-level (not already pinned) discussions */}
+            {isAuthor && selectedComment && !selectedComment.pinned && (
               <MenuItem onClick={() => { setAnchorEl(null); handlePin(selectedComment?.comment._id); }}>Pin</MenuItem>
             )}
             <MenuItem onClick={() => { setAnchorEl(null); }}>Report</MenuItem>
