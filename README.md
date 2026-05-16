@@ -1,75 +1,301 @@
-
 # 🩺 MedInternia
 
-MedInternia is a comprehensive medical education and collaboration platform designed for doctors, interns, and patients. It provides a rich set of features for case-based learning, certifications, job opportunities, webinars, and more.
+<div align="center">
 
-## 🚀 Features
-- 🗂️ **Case System:** Create, discuss, and review medical cases with nested comments and replies.
-- 🧑‍⚕️ **Peer Review:** Doctors and interns can rate and review cases and comments.
-- 🏅 **Badges & Certificates:** Earn badges and certificates for achievements and participation.
-- 💼 **Job Board:** Browse and apply for medical job opportunities.
-- 🎥 **Webinars & AMAs:** Attend and host webinars, ask questions, and interact live.
-- 👤 **User Profiles:** Manage and update your profile, including professional details.
-- 🔒 **Authentication:** Register and login with email, including OTP verification (configurable).
-- 🔗 **Integration:** Export data and integrate with other platforms.
-- 🤖 **AI Suggestions:** Get AI-powered suggestions for cases and discussions.
-- 📹 **Video Conferencing:** Secure video calls for case discussions and webinars.
+### Empowering Medical Learning, Collaboration & Career Growth
 
-## 🛠️ Tech Stack
-- **Frontend:** Next.js, React, Material-UI
-- **Backend:** Node.js, Express, MongoDB, Mongoose
-- **Email:** Nodemailer (Gmail or Ethereal for OTP)
-- **Authentication:** JWT
-- **Other:** RESTful API, CORS, Helmet, Morgan
+MedInternia is a comprehensive medical education and collaboration platform designed for doctors, interns, medical students, and patients.
 
-## 📁 Folder Structure
-```
+🚀 Official GSSoC 2026 Project
+
+<p align="center">
+
+<img src="https://img.shields.io/github/stars/AnirudhPhophalia/MedInternia?style=for-the-badge" />
+<img src="https://img.shields.io/github/forks/AnirudhPhophalia/MedInternia?style=for-the-badge" />
+<img src="https://img.shields.io/github/issues/AnirudhPhophalia/MedInternia?style=for-the-badge" />
+<img src="https://img.shields.io/github/license/AnirudhPhophalia/MedInternia?style=for-the-badge" />
+<img src="https://img.shields.io/badge/GSSoC-2026-orange?style=for-the-badge" />
+
+</p>
+
+</div>
+
+---
+
+# 🌟 Features
+
+## 🗂️ Case-Based Learning System
+
+* Create, publish, and discuss medical cases
+* Nested comments and threaded replies
+* Interactive peer discussions
+
+## 🧑‍⚕️ Peer Review & Ratings
+
+* Doctors and interns can review cases
+* Rating system for cases and comments
+
+## 🏅 Badges & Certifications
+
+* Earn participation badges
+* Achievement-based certificates
+
+## 💼 Medical Job Board
+
+* Browse and apply for medical jobs
+* Internship and residency opportunities
+
+## 🎥 Webinars & AMA Sessions
+
+* Attend and host webinars
+* Interactive live sessions
+
+## 🤖 AI-Powered Suggestions
+
+* Smart recommendations for discussions
+* AI-assisted learning support
+
+## 📹 Video Conferencing
+
+* Secure video calls
+* Webinar and discussion support
+
+## 👤 User Profiles
+
+* Manage professional information
+* Personalized dashboards
+
+## 🔒 Authentication & Security
+
+* JWT Authentication
+* OTP Verification
+* Protected routes
+
+---
+
+# 🛠️ Tech Stack
+
+## Frontend
+
+* Next.js
+* React.js
+* Material UI
+
+## Backend
+
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+
+## Authentication & Security
+
+* JWT
+* Nodemailer
+* Helmet
+* CORS
+
+---
+
+# 📁 Folder Structure
+
+```bash
 MedInternia/
-  backend/      # Node.js/Express API, controllers, models, routes
-  frontend/     # Next.js/React app, pages, components, styles
-  README.md     # Project overview and instructions
+│
+├── backend/
+├── frontend/
+├── README.md
+└── package.json
 ```
 
-## ⚡ Setup Instructions
-1. **Clone the repository:**
-   ```bash
-   git clone <repo-url>
-   cd MedInternia
-   ```
-2. **Install dependencies:**
-   - Backend: `cd backend && npm install`
-   - Frontend: `cd frontend && npm install`
-3. **Configure environment variables:**
-   - Backend: Create `.env` in `backend/` (see sample in repo)
-   - Frontend: Configure as needed
-4. **Start servers:**
-   - Backend: `npm run dev` (default port 3000)
-   - Frontend: `npm run dev` (default port 3001)
-5. **Access the app:**
-   - Frontend: [http://localhost:3001](http://localhost:3001)
-   - Backend API: [http://localhost:3000/api](http://localhost:3000/api)
+---
 
-## 🔑 Environment Variables
-- **Backend:**
-  - `PORT` - API server port
-  - `MONGODB_URI` - MongoDB connection string
-  - `JWT_SECRET` - JWT secret key
-  - `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_HOST`, `EMAIL_PORT` - Email credentials for OTP
+# ⚡ Getting Started
 
-## 📝 Usage
-- Register as a doctor, intern, or patient
-- Verify email via OTP (if enabled)
-- Create and discuss cases
-- Rate and review comments
-- Earn badges and certificates
-- Apply for jobs
-- Join webinars and video calls
+## 1️⃣ Clone Repository
 
-## 🤝 Contribution
-Pull requests and issues are welcome! Please follow the code style and add documentation for new features.
+```bash
+git clone https://github.com/AnirudhPhophalia/MedInternia.git
+cd MedInternia
+```
 
-## 📄 License
+---
+
+## 2️⃣ Install Dependencies
+
+### Backend
+
+```bash
+cd backend
+npm install
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+---
+
+## 3️⃣ Configure Environment Variables
+
+Create a `.env` file inside `backend/`
+
+```env
+PORT=3000
+MONGODB_URI=your_mongodb_connection
+JWT_SECRET=your_jwt_secret
+
+EMAIL_USER=your_email
+EMAIL_PASS=your_password
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+```
+
+---
+
+## 4️⃣ Start Development Servers
+
+### Backend
+
+```bash
+npm run dev
+```
+
+### Frontend
+
+```bash
+npm run dev
+```
+
+---
+
+# 🌐 Local Development URLs
+
+| Service     | URL                       |
+| ----------- | ------------------------- |
+| Frontend    | http://localhost:3001     |
+| Backend API | http://localhost:3000/api |
+
+---
+
+# 📝 Usage
+
+* Register as a doctor, intern, or patient
+* Verify email via OTP
+* Create and discuss cases
+* Attend webinars
+* Apply for jobs
+* Earn badges and certificates
+
+---
+
+# 🤝 Contributing
+
+We welcome contributions from developers, designers, and medical enthusiasts!
+
+## Contribution Steps
+
+1. Fork the repository
+2. Clone your fork
+3. Create a branch
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+4. Commit changes
+
+```bash
+git commit -m "feat: added new feature"
+```
+
+5. Push changes
+
+```bash
+git push origin feature/your-feature-name
+```
+
+6. Open a Pull Request
+
+---
+
+# 🌟 Contributors
+
+Thanks to all the amazing contributors who help improve MedInternia ❤️
+
+<a href="https://github.com/AnirudhPhophalia/MedInternia/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=AnirudhPhophalia/MedInternia" />
+</a>
+
+---
+
+# 👨‍💻 Project Admins / Maintainers
+
+<table>
+<tr>
+
+<td align="center">
+<a href="https://github.com/AnirudhPhophalia">
+<img src="https://github.com/AnirudhPhophalia.png" width="100px;" alt=""/>
+<br />
+<sub><b>Anirudh Phophalia</b></sub>
+</a>
+</td>
+
+<td align="center">
+  <a href="https://github.com/Anushka-Verma-CODES">
+<img src="https://github.com/github.png" width="100px;" alt=""/>
+<br />
+<sub><b>Anushka Verma</b></sub>
+</td>
+
+<td align="center">
+<a href="https://github.com/IshwinderKaur8">
+<img src="https://github.com/github.png" width="100px;" alt=""/>
+<br />
+<sub><b>Ishwinder Kaur Ahluwalia</b></sub>
+</td>
+
+<td align="center">
+<a href="https://github.com/bhagya-prog">
+<img src="https://github.com/github.png" width="100px;" alt=""/>
+<br />
+<sub><b>Bhagya Vardhan</b></sub>
+</td>
+
+</tr>
+</table>
+
+---
+
+# 🏷️ GSSoC 2026
+
+<div align="center">
+
+✨ Officially Selected in GirlScript Summer of Code 2026 ✨
+
+</div>
+
+---
+
+# 📄 License
+
 This project is licensed under the MIT License.
 
-## 📬 Contact
-For support or questions, contact the owner: Team Blue Spies
+---
+
+# 📬 Contact
+
+📧 Team Blue Spies
+🌐 https://github.com/AnirudhPhophalia/MedInternia
+
+---
+
+<div align="center">
+
+Made with ❤️ for the Medical Community & Open Source Ecosystem
+
+</div>
