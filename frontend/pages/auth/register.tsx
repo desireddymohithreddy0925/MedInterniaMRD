@@ -74,7 +74,7 @@ export default function Register() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const validatePhone = (value: string) => /^[6-9]\d{9}$$/.test(value);
+  const validatePhone = (value: string) => /^[6-9]\d{9}$/.test(value);
 
   const handlePhoneChange = (e: any) => {
     const { name, value } = e.target;
