@@ -12,29 +12,37 @@ import SearchIcon from "@mui/icons-material/Search";
 
 const mockData = ["Result 1", "Result 2", "Result 3"];
 
+const normalizeQueryParam = (q: string | string[] | undefined) => {
+  const value = Array.isArray(q) ? q[0] : q;
+  return typeof value === 'string' ? value.trim() : '';
+};
+
 export default function SearchPage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [lastSearched, setLastSearched] = useState("");
   const [results, setResults] = useState<string[]>([]);
   const [searched, setSearched] = useState(false);
 
-  const performSearch = (q: string) => {
+  const performSearch = (q: string, syncUrl = true) => {
     const trimmed = (q || "").trim();
+    const urlQuery = normalizeQueryParam(router.query.q);
     setQuery(trimmed);
+    setLastSearched(trimmed);
     if (!trimmed) {
       setResults([]);
       setSearched(false);
+      if (syncUrl && urlQuery) {
+        router.replace({ pathname: '/search' }, undefined, { shallow: true });
+      }
       return;
     }
     const found = mockData.filter((item) => item.toLowerCase().includes(trimmed.toLowerCase()));
     setResults(found);
     setSearched(true);
-    // Sync search query to URL for bookmarking and refresh consistency
-    router.replace({ pathname: '/search', query: { q: trimmed } }, undefined, { shallow: true });
-  };
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+    if (syncUrl && urlQuery !== trimmed) {
+      router.replace({ pathname: '/search', query: { q: trimmed } }, undefined, { shallow: true });
+    }
   };
 
   // Enter key handler on the text field
@@ -47,14 +55,21 @@ export default function SearchPage() {
 
   // If query provided via URL (?q=...), perform search on mount/update
   useEffect(() => {
-    const q = Array.isArray(router.query.q) ? router.query.q[0] : router.query.q || "";
-    if (q) {
-      performSearch(q);
+    if (!router.isReady) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query.q]);
 
-  const displayQuery = query.length > 50 ? `${query.substring(0, 47)}...` : query;
+    const trimmed = normalizeQueryParam(router.query.q);
+
+    if (trimmed === lastSearched) {
+      return;
+    }
+
+    performSearch(trimmed, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, router.query.q, lastSearched]);
+
+  const displayQuery = lastSearched.length > 50 ? `${lastSearched.substring(0, 47)}...` : lastSearched;
 
   return (
     <Container maxWidth="md" sx={{ mt: 5 }}>

@@ -70,22 +70,23 @@ export default function Register() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const validatePhone = (value: string) => /^\d{10}$/.test(value);
+
+  const getOptionalPhoneError = (value: string, label = 'mobile number') => {
+    if (!value) return '';
+    return validatePhone(value) ? '' : `Enter a valid 10-digit ${label}.`;
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const digits = value.replace(/\D/g, '').slice(0, 10);
     setForm({ ...form, [name]: digits });
 
-    const errorMessage = digits.length === 0
-      ? ''
-      : !validatePhone(digits)
-        ? 'Enter a valid 10-digit mobile number.'
-        : '';
+    const errorMessage = getOptionalPhoneError(digits);
 
     if (name === 'phone') {
       setPhoneError(errorMessage);
@@ -169,12 +170,18 @@ export default function Register() {
     e.preventDefault();
     setError('');
 
-    if (form.phone && !validatePhone(form.phone)) {
+    const phoneValidationError = getOptionalPhoneError(form.phone);
+    const emergencyPhoneValidationError = getOptionalPhoneError(form.emergencyContactPhone, 'emergency contact number');
+
+    setPhoneError(phoneValidationError);
+    setEmergencyPhoneError(emergencyPhoneValidationError);
+
+    if (phoneValidationError) {
       setError('Please enter a valid 10-digit mobile number.');
       return;
     }
 
-    if (form.emergencyContactPhone && !validatePhone(form.emergencyContactPhone)) {
+    if (emergencyPhoneValidationError) {
       setError('Please enter a valid 10-digit emergency contact number.');
       return;
     }
