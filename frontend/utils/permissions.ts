@@ -96,7 +96,7 @@ export const rolePermissions: Record<AppRole, AppPermission[]> = {
 export const normalizeRole = (role?: string): AppRole | undefined => {
   if (!role) return undefined;
   const normalized = role.toLowerCase().replace(/[-\s]/g, '_') as AppRole;
-  return normalized in rolePermissions ? normalized : undefined;
+  return Object.prototype.hasOwnProperty.call(rolePermissions, normalized) ? normalized : undefined;
 };
 
 export const canUser = (role: string | undefined, permission: AppPermission) => {

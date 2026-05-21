@@ -11,7 +11,7 @@ import {
 
 const router = Router();
 
-// Create badge (admin only)
+// Create badge
 router.post('/', authenticate, requirePermission('badge:manage'), createBadge);
 
 // Get all badges

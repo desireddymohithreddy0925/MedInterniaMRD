@@ -26,17 +26,17 @@ import { requirePermission } from '../middleware/permissions';
 
 const router = express.Router();
 
-// Public routes (with authentication)
+// Authenticated case browsing routes
 router.get('/', authenticate, getCases);
-router.get('/:id', authenticate, getCaseById);
-
-// Doctor only routes
-router.post('/', authenticate, requirePermission('case:create'), createCase);
 router.get('/my/cases', authenticate, getMyCases);
+
+// Permission-guarded case management routes
+router.post('/', authenticate, requirePermission('case:create'), createCase);
+router.get('/:id', authenticate, getCaseById);
 router.put('/:id', authenticate, requirePermission('case:update'), updateCase);
 router.delete('/:id', authenticate, requirePermission('case:delete'), deleteCase);
 
-// Interactive routes (all authenticated users)
+// Permission-guarded interactive routes
 router.post('/:id/comments', authenticate, requirePermission('comment:create'), addComment);
 router.post('/:caseId/comments/:commentId/reply', authenticate, requirePermission('comment:create'), replyToComment);
 router.post('/:caseId/comments/:commentId/like', authenticate, likeComment);
@@ -51,7 +51,7 @@ router.get('/:id/follow-ups', authenticate, getCaseFollowUps);
 router.post('/:id/ai-suggestions', authenticate, generateAISuggestions);
 router.get('/:id/ai-suggestions', authenticate, getCaseAISuggestions);
 
-// Pin/unpin comments (doctor only)
+// Comment moderation routes
 router.post('/:caseId/comments/:commentId/pin', authenticate, requirePermission('comment:moderate'), pinComment);
 router.post('/:caseId/comments/:commentId/unpin', authenticate, requirePermission('comment:moderate'), unpinComment);
 // Get all pinned comments for a case

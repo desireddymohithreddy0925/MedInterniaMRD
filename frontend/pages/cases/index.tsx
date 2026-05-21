@@ -32,11 +32,8 @@ export default function Cases() {
   const [canCreateCases, setCanCreateCases] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     api
-      .get("/cases", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get("/cases")
       .then((res) => {
         setCases(res.data.data.cases || []);
         setLoading(false);
@@ -47,9 +44,7 @@ export default function Cases() {
       });
 
     api
-      .get("/auth/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get("/auth/profile")
       .then((res) => {
         const userType = res.data?.data?.user?.userType;
         setCanCreateCases(canUser(userType, "case:create"));

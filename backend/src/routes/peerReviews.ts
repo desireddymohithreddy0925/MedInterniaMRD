@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
+import { authenticate, authorize } from '../middleware/auth';
 import { requirePermission } from '../middleware/permissions';
 import {
   submitPeerReview,
@@ -13,7 +13,7 @@ import {
 const router = Router();
 
 // Submit peer review
-router.post('/', authenticate, requirePermission('comment:create'), submitPeerReview);
+router.post('/', authenticate, authorize('intern'), submitPeerReview);
 
 // Get peer reviews for a comment
 router.get('/comment/:commentId', getCommentReviews);

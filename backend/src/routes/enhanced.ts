@@ -12,7 +12,7 @@ import { requirePermission } from '../middleware/permissions';
 const router = express.Router();
 
 // Comment interactions
-router.post('/cases/:caseId/comments/:commentId/rate', authenticate, requirePermission('rating:create'), rateComment);
+router.post('/cases/:caseId/comments/:commentId/rate', authenticate, requirePermission('user:award_points'), rateComment);
 router.post('/cases/:caseId/comments/:commentId/reply', authenticate, requirePermission('comment:create'), replyToComment);
 router.post('/cases/:caseId/comments/:commentId/like', authenticate, likeComment);
 
