@@ -801,8 +801,8 @@ export const getCaseModerationQueue = async (req: AuthRequest, res: Response) =>
     } = req.query;
     const allowedStatuses = ['pending', 'approved', 'rejected', 'changes_requested'];
     const queueStatus = allowedStatuses.includes(status as string) ? status as string : 'pending';
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
+    const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string, 10) || 10));
     const skip = (pageNum - 1) * limitNum;
 
     const filter = { isActive: true, moderationStatus: queueStatus };
