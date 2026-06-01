@@ -215,12 +215,20 @@ export default function Register() {
     // GSSoC: Show loading spinner while request is in-flight
     setLoading(true);
     try {
-      const res = await api.post('/auth/register', form);
+      // Build payload — omit empty optional ObjectId fields so Mongoose doesn't
+      // try to cast an empty string to an ObjectId and throw a 400.
+      const payload: Record<string, any> = { ...form };
+      if (!payload.mentorDoctor) delete payload.mentorDoctor;
+      if (!payload.phone) delete payload.phone;
+      if (!payload.dateOfBirth) delete payload.dateOfBirth;
+      if (!payload.gender) delete payload.gender;
+
+      const res=await api.post('/auth/register', payload);
       const user = res.data.data.user;
       localStorage.setItem('token', res.data.data.token);
       localStorage.setItem('userId', user._id || user.id);
       localStorage.setItem('user', JSON.stringify(user));
-
+        
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
