@@ -48,7 +48,6 @@ interface ProfileFormData {
     zip: string;
   };
   image: string;
-  bannerImage: string;
   role: "Intern" | "Doctor" | "Patient";
   // Intern-specific fields
   medicalSchool: string;
@@ -166,7 +165,6 @@ const initialFormState: ProfileFormData = {
     zip: "",
   },
   image: ROLE_AVATARS.Doctor,
-  bannerImage: "",
   role: "Doctor",
   medicalSchool: "",
   graduationYear: "",
@@ -185,7 +183,6 @@ export default function EditProfilePage() {
 
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   // State to manage form data, initialized with placeholder values
   const [form, setForm] = useState<ProfileFormData>(initialFormState);
@@ -257,7 +254,6 @@ export default function EditProfilePage() {
                 zip: user.address?.zipCode || user.address?.zip || "",
               },
               image: user.profilePicture || ROLE_AVATARS[user.userType === "doctor" ? "Doctor" : user.userType === "intern" ? "Intern" : "Patient"],
-              bannerImage: user.bannerImage || "",
               role: user.userType === "doctor" ? "Doctor" : user.userType === "intern" ? "Intern" : "Patient",
               medicalSchool: user.medicalSchool || "",
               graduationYear: user.yearOfStudy || user.graduationYear || "",
@@ -303,7 +299,6 @@ export default function EditProfilePage() {
 
   // Handles the change in profile picture from file input (store file in state, don't upload yet)
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
-  const [selectedBannerFile, setSelectedBannerFile] = useState<File | null>(null);
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
@@ -320,33 +315,11 @@ export default function EditProfilePage() {
     }
   };
 
-  const handleBannerChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setSelectedBannerFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setForm({ ...form, bannerImage: e.target.result as string });
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   // Handles removing the profile picture
   const handleRemoveImage = () => {
     setForm({ ...form, image: ROLE_AVATARS[form.role] }); // Revert to role-based avatar
     setHasCustomImage(false); // No custom image anymore
     setOpenImageMenu(false); // Close the menu after removing
-  };
-
-  const handleRemoveBanner = () => {
-    setForm({ ...form, bannerImage: "" });
-    setSelectedBannerFile(null);
-    if (bannerInputRef.current) {
-      bannerInputRef.current.value = "";
-    }
   };
 
   // Handles form submission, uploads image if selected, then updates profile
@@ -380,27 +353,6 @@ export default function EditProfilePage() {
           return;
         }
       }
-      let bannerImageUrl = (typeof form.bannerImage === 'string' && /^https?:\/\//.test(form.bannerImage)) ? form.bannerImage : '';
-      if (selectedBannerFile) {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
-        const formData = new FormData();
-        formData.append('profileBanner', selectedBannerFile);
-        const resBanner = await fetch(`${API_BASE_URL}/auth/profile/upload-banner`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-        const dataBanner = await resBanner.json();
-        if (dataBanner.success && dataBanner.data && dataBanner.data.user && dataBanner.data.user.bannerImage) {
-          bannerImageUrl = dataBanner.data.user.bannerImage;
-        } else {
-          setMessage(dataBanner.message || 'Failed to upload banner image.');
-          setLoading(false);
-          return;
-        }
-      }
       // Prepare payload for backend
       const payload = {
         firstName: form.name.split(' ')[0] || '',
@@ -414,7 +366,6 @@ export default function EditProfilePage() {
           zipCode: form.address.zip,
         },
         profilePicture: profilePictureUrl,
-        bannerImage: bannerImageUrl,
         medicalSchool: form.medicalSchool,
         yearOfStudy: form.graduationYear ? Number(form.graduationYear) : undefined,
         interests: Array.isArray(form.specialtiesOfInterest)
@@ -435,7 +386,6 @@ export default function EditProfilePage() {
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 3000);
         setSelectedImageFile(null); // Clear selected image after save
-        setSelectedBannerFile(null);
       } else {
         setMessage(data.message || "Failed to update profile.");
       }
@@ -470,7 +420,6 @@ export default function EditProfilePage() {
   const handleCancel = () => {
     setForm(initialFormState);
     setHasCustomImage(false);
-    setSelectedBannerFile(null);
     setMessage("");
     setIsSaved(false);
     setErrors({ email: '', phone: '', zip: '' });
@@ -493,54 +442,6 @@ export default function EditProfilePage() {
         <Card sx={{ p: 4, width: '100%', maxWidth: 650, borderRadius: '20px' }}>
           {/* Profile Header Section */}
           <Box display="flex" alignItems="center" flexDirection="column" gap={3} mb={5}>
-            <Box
-              sx={{
-                width: '100%',
-                height: { xs: 140, sm: 170 },
-                borderRadius: '16px',
-                background: form.bannerImage
-                  ? `linear-gradient(rgba(0,0,0,0.08), rgba(0,0,0,0.08)), url(${form.bannerImage}) center/cover`
-                  : 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: 'inset 0 -50px 70px rgba(0,0,0,0.16)'
-              }}
-            >
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ position: 'absolute', right: 16, bottom: 16 }}
-              >
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<PhotoCameraIcon />}
-                  onClick={() => bannerInputRef.current?.click()}
-                  sx={{ bgcolor: 'rgba(255,255,255,0.95)', color: '#1e293b', '&:hover': { bgcolor: '#fff' } }}
-                >
-                  Upload Banner
-                </Button>
-                {form.bannerImage && (
-                  <Button
-                    variant="contained"
-                    size="small"
-                    color="error"
-                    startIcon={<DeleteForeverIcon />}
-                    onClick={handleRemoveBanner}
-                  >
-                    Remove
-                  </Button>
-                )}
-              </Stack>
-              <input
-                ref={bannerInputRef}
-                accept="image/*"
-                style={{ display: 'none' }}
-                id="banner-upload-button"
-                type="file"
-                onChange={handleBannerChange}
-              />
-            </Box>
             <Box sx={{ position: 'relative', width: 130, height: 130, mb: 1 }}>
               <Avatar
                 src={

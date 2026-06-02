@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import User, { IUser } from '../models/User';
 import { generateToken } from '../utils/jwt';
 import { AuthRequest } from '../middleware/auth';
-import { uploadProfileBanner, uploadProfileImage } from '../utils/cloudinary';
+import { uploadProfileImage } from '../utils/cloudinary';
 
 // Upload profile picture
 export const uploadProfilePicture = async (req: AuthRequest, res: Response) => {
@@ -41,48 +41,6 @@ export const uploadProfilePicture = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Upload profile picture error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Internal server error'
-    });
-  }
-};
-
-// Upload profile banner
-export const uploadProfileBannerImage = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ success: false, message: 'User not authenticated' });
-    }
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
-    }
-
-    const uploadResult = await uploadProfileBanner(req.file, String(req.user._id));
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      { bannerImage: uploadResult.secure_url },
-      { new: true, runValidators: true }
-    ).select('-password');
-
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    return res.json({
-      success: true,
-      message: 'Profile banner updated successfully',
-      data: {
-        user: updatedUser,
-        bannerImage: {
-          url: uploadResult.secure_url,
-          publicId: uploadResult.public_id
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Upload profile banner error:', error);
     return res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'Internal server error'

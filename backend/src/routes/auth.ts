@@ -1,4 +1,4 @@
-import { sendOtp, verifyOtp, forgotPassword, resetPassword, uploadProfileBannerImage, uploadProfilePicture } from '../controllers/authController';
+import { sendOtp, verifyOtp, forgotPassword, resetPassword, uploadProfilePicture } from '../controllers/authController';
 import { Router } from 'express';
 import {
   register,
@@ -45,12 +45,6 @@ router.post(
   authenticate,
   upload.single('profilePicture'),
   uploadProfilePicture
-);
-router.post(
-  '/profile/upload-banner',
-  authenticate,
-  upload.single('profileBanner'),
-  uploadProfileBannerImage
 );
 router.put('/profile', authenticate, updateProfile);
 router.put('/change-password', authenticate, changePassword);
