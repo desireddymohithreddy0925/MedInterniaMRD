@@ -215,8 +215,9 @@ const UserSchema = new Schema<IUser>({
   },
   bannerImage: {
     type: String,
-    match: [/^https?:\/\/.+/, 'Please provide a valid banner image URL']
-  },
+    // Allow empty string for banner removal; otherwise require an http(s) URL
+    match: [/^(https?:\/\/.+)?$/, 'Please provide a valid banner image URL']
+  }
   // Doctor specific fields
   specialization: {
     type: String,
