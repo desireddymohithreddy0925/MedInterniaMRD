@@ -60,7 +60,7 @@ export default function ContactPage() {
             </Typography>
             <Button
               component={Link}
-              href="/"
+              href="/dashboard"
               variant="contained"
               aria-label="Back to Home"
               startIcon={<Home size={18} />}
@@ -84,7 +84,7 @@ export default function ContactPage() {
                 },
               }}
             >
-              Back to Home
+              Return to Dashboard
             </Button>
           </Box>
 
