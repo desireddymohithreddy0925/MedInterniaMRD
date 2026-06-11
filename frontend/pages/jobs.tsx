@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/router";
 import api from "../utils/api";
 import { hasAuthToken, redirectToLogin } from "../utils/authRedirect";
+import { getCurrentUserRole } from "../utils/permissions";
 
 export default function Jobs() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function Jobs() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
+  const [userType, setUserType] = useState("");
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -36,6 +38,10 @@ export default function Jobs() {
   useEffect(() => {
     if (!authChecked) return;
 
+    const storedUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user") || "null") : null;
+    const currentUserType = storedUser?.userType || getCurrentUserRole() || "";
+    setUserType(String(currentUserType).toLowerCase());
+
     api
       .get("/jobs")
       .then((res) => {
@@ -47,6 +53,8 @@ export default function Jobs() {
         setLoading(false);
       });
   }, [authChecked]);
+
+  const isPatient = userType === "patient";
 
   if (loading)
     return (
@@ -68,6 +76,11 @@ export default function Jobs() {
         justifyContent: "center",
       }}
     >
+      {isPatient ? (
+        <Alert severity="info" sx={{ mb: 3, textAlign: "center" }}>
+          Job opportunities are currently available for doctors and interns.
+        </Alert>
+      ) : null}
       <Card
         sx={{
           p: 4,
@@ -95,7 +108,11 @@ export default function Jobs() {
           Discover internships, residencies, and medical jobs tailored for you.
         </Typography>
 
-        {jobs.length === 0 ? (
+        {isPatient ? (
+          <Typography textAlign="center" color="text.secondary">
+            Patients do not see job opportunities on this platform.
+          </Typography>
+        ) : jobs.length === 0 ? (
           <Typography textAlign="center">No jobs found.</Typography>
         ) : (
           <List>

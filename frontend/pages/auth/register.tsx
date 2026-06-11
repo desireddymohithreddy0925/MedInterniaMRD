@@ -192,6 +192,12 @@ export default function Register() {
     const emergencyPhoneValidationError = getOptionalPhoneError(form.emergencyContactPhone, 'emergency contact number');
     const dob = form.dateOfBirth ? new Date(form.dateOfBirth) : null;
     const today = new Date();
+    
+    if(form.userType === 'patient' && form.phone===form.emergencyContactPhone){
+      setError('Phone number and emergency contact number cannot be the same.');
+      return;
+    }
+
     if(form.userType=='doctor' && parseInt(form.experience,10)<0) {
       setError('Experience cannot be a negative number.');
       return;
@@ -523,9 +529,64 @@ export default function Register() {
                             helperText={emergencyPhoneError || 'Enter a 10-digit mobile number'}
                             inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 10 }}
                           />
-                          <TextField label="Emergency Contact Relationship" name="emergencyContactRelationship" fullWidth margin="normal" value={form.emergencyContactRelationship} onChange={handleChange} />
-                          <TextField label="Medical History (comma separated)" name="medicalHistory" fullWidth margin="normal" value={form.medicalHistory} onChange={handleChange} />
-                          <TextField label="Allergies (comma separated)" name="allergies" fullWidth margin="normal" value={form.allergies} onChange={handleChange} />
+                          <TextField
+                            select
+                            label="Emergency Contact Relationship"
+                            name="emergencyContactRelationship"
+                            fullWidth
+                            margin="normal"
+                            value={form.emergencyContactRelationship}
+                            onChange={handleChange}
+                          >
+                            <MenuItem value="">Select relationship</MenuItem>
+                            <MenuItem value="Spouse">Spouse</MenuItem>
+                            <MenuItem value="Parent">Parent</MenuItem>
+                            <MenuItem value="Sibling">Sibling</MenuItem>
+                            <MenuItem value="Child">Child</MenuItem>
+                            <MenuItem value="Friend">Friend</MenuItem>
+                            <MenuItem value="Guardian">Guardian</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                          </TextField>
+                          <TextField
+                            select
+                            label="Medical History"
+                            name="medicalHistory"
+                            fullWidth
+                            margin="normal"
+                            value={form.medicalHistory}
+                            onChange={handleChange}
+                          >
+                            <MenuItem value="">Select medical history</MenuItem>
+                            <MenuItem value="None">None</MenuItem>
+                            <MenuItem value="Hypertension">Hypertension</MenuItem>
+                            <MenuItem value="Diabetes">Diabetes</MenuItem>
+                            <MenuItem value="Asthma">Asthma</MenuItem>
+                            <MenuItem value="Heart Disease">Heart Disease</MenuItem>
+                            <MenuItem value="Thyroid Disorder">Thyroid Disorder</MenuItem>
+                            <MenuItem value="Kidney Disease">Kidney Disease</MenuItem>
+                            <MenuItem value="Cancer">Cancer</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                          </TextField>
+                          <TextField
+                            select
+                            label="Allergies"
+                            name="allergies"
+                            fullWidth
+                            margin="normal"
+                            value={form.allergies}
+                            onChange={handleChange}
+                          >
+                            <MenuItem value="">Select allergies</MenuItem>
+                            <MenuItem value="None">None</MenuItem>
+                            <MenuItem value="Penicillin">Penicillin</MenuItem>
+                            <MenuItem value="Latex">Latex</MenuItem>
+                            <MenuItem value="Peanuts">Peanuts</MenuItem>
+                            <MenuItem value="Shellfish">Shellfish</MenuItem>
+                            <MenuItem value="Dust">Dust</MenuItem>
+                            <MenuItem value="Pollen">Pollen</MenuItem>
+                            <MenuItem value="Animal Dander">Animal Dander</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
+                          </TextField>
                         </Box>
                       </Fade>
                     )}
