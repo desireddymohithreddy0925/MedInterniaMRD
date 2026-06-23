@@ -26,7 +26,7 @@ export const getSafeRedirectPath = (redirect: string | string[] | undefined) => 
     return redirectPath;
   }
 
-  return "/dashboard";
+  return "/landing";
 };
 
 export const redirectToLogin = (router: NextRouter, redirectPath = getCurrentRedirectPath()) => {
