@@ -20,7 +20,7 @@ router.get('/', getAllBadges);
 router.post('/award', authenticate, authorize('doctor'), awardBadge);
 
 // Get user badges
-router.get('/user/:userId', getUserBadges);
+router.get('/user/:userId', authenticate, getUserBadges);
 
 // Toggle badge visibility
 router.patch('/:userBadgeId/visibility', authenticate, toggleBadgeVisibility);
