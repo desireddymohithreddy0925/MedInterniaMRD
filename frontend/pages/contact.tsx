@@ -97,9 +97,9 @@ export default function ContactPage() {
               </Typography>
               <Button
                 component={Link}
-                href="/dashboard"
+                href={isLoggedIn ? "/dashboard" : "/"}
                 variant="contained"
-                aria-label="Back to Home"
+                aria-label={isLoggedIn ? "Go to Dashboard" : "Back to Home"}
                 startIcon={<Home size={18} />}
                 sx={{
                   mt: 4,
@@ -121,7 +121,7 @@ export default function ContactPage() {
                   },
                 }}
               >
-                Return to Dashboard
+                {isLoggedIn ? "Return to Dashboard" : "Return to Home"}
               </Button>
             </Box>
 
