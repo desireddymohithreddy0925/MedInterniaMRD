@@ -5,10 +5,15 @@ import type { AppRole } from '../middleware/permissions';
 export interface IUser extends Document {
   following?: mongoose.Types.ObjectId[];
   followers?: mongoose.Types.ObjectId[];
+  solvedCases?: mongoose.Types.ObjectId[];
   firstName: string;
   lastName: string;
   email: string;
   password: string;
+  passwordResetToken?: string;
+passwordResetExpires?: Date;
+  loginAttempts?: number;
+  lockoutUntil?: Date | null;
   userType: AppRole;
   phone?: string;
   dateOfBirth?: Date;
@@ -30,6 +35,7 @@ export interface IUser extends Document {
   credits?: number;
   streak: number; // Current active streak (days)
   longestStreak: number;
+  lastActivityDate?: Date;
   casesAnalyzed: number;
   upvotesReceived: number;
   peerReviewsGiven: number;
@@ -87,6 +93,7 @@ const EmergencyContactSchema = new Schema({
 const UserSchema = new Schema<IUser>({
   following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  solvedCases: [{ type: Schema.Types.ObjectId, ref: 'Case' }],
   firstName: {
     type: String,
     required: [true, 'First name is required'],
@@ -111,8 +118,30 @@ const UserSchema = new Schema<IUser>({
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters'],
-    select: false // Don't include password in queries by default
+    validate: {
+      validator: function (v: string) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/.test(v);
+      },
+      message: 'Password must be at least 8 characters and contain uppercase, lowercase, digit, and special character'
+    },
+    select: false
+  },
+  passwordResetToken: {
+  type: String,
+  select: false
+},
+
+passwordResetExpires: {
+  type: Date,
+  select: false
+},
+  loginAttempts: {
+    type: Number,
+    default: 0
+  },
+  lockoutUntil: {
+    type: Date,
+    default: null
   },
   userType: {
     type: String,
@@ -170,6 +199,10 @@ const UserSchema = new Schema<IUser>({
     type: Number,
     default: 0,
     min: [0, 'Longest streak cannot be negative']
+  },
+  lastActivityDate: {
+    type: Date,
+    default: null
   },
   casesAnalyzed: {
     type: Number,
@@ -294,6 +327,14 @@ const UserSchema = new Schema<IUser>({
   timestamps: true
 });
 
+// Clamp mentoringCredits to non-negative before saving
+UserSchema.pre('save', function (next) {
+  if (this.mentoringCredits !== undefined && this.mentoringCredits < 0) {
+    this.mentoringCredits = 0;
+  }
+  next();
+});
+
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
@@ -302,7 +343,7 @@ UserSchema.pre('save', async function (next) {
 
   try {
     const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
+    (this as any).password = await bcrypt.hash((this as any).password, salt);
     next();
   } catch (error) {
     next(error as Error);
@@ -311,7 +352,7 @@ UserSchema.pre('save', async function (next) {
 
 // Compare password method
 UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
-  return await bcrypt.compare(candidatePassword, this.password);
+  return await bcrypt.compare(candidatePassword, (this as any).password);
 };
 
 // Index for better performance (email and licenseNumber already indexed via unique: true)

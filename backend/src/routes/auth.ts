@@ -1,4 +1,4 @@
-import { sendOtp, verifyOtp, forgotPassword, resetPassword, uploadProfilePicture } from '../controllers/authController';
+import { sendOtp, verifyOtp, forgotPassword, resetPassword, uploadProfilePicture, logout } from '../controllers/authController';
 import { Router } from 'express';
 import {
   register,
@@ -8,6 +8,7 @@ import {
   changePassword
 } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
+import { otpRequestLimiter, otpVerifyLimiter, loginLimiter, registerLimiter } from '../middleware/otpRateLimiter';
 import multer from 'multer';
 
 const upload = multer({
@@ -26,18 +27,19 @@ const upload = multer({
 
 const router = Router();
 // Forgot password routes
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
+router.post('/forgot-password', otpRequestLimiter, forgotPassword);
+router.post('/reset-password', otpVerifyLimiter, resetPassword);
 
 // OTP routes
-router.post('/send-otp', sendOtp);
-router.post('/verify-otp', verifyOtp);
+router.post('/send-otp', otpRequestLimiter, sendOtp);
+router.post('/verify-otp', otpVerifyLimiter, verifyOtp);
 
 // Public routes
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', registerLimiter, register);
+router.post('/login', loginLimiter, login);
 
 // Protected routes (require authentication)
+router.post('/logout', authenticate, logout);
 router.get('/profile', authenticate, getProfile);
 // Profile image upload
 router.post(
@@ -48,5 +50,8 @@ router.post(
 );
 router.put('/profile', authenticate, updateProfile);
 router.put('/change-password', authenticate, changePassword);
+router.get('/validate-token', authenticate, (req, res) => {
+  res.json({ valid: true, user: (req as any).user });
+});
 
 export default router;

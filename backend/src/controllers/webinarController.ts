@@ -92,15 +92,24 @@ export const createWebinar = async (req: AuthRequest, res: Response) => {
     // Ensure webinar.host is a populated document
     const host = webinar.host as any;
 
-    // Notify all interns about the new webinar
-    const interns = await User.find({ userType: 'intern' });
-      const notifications = interns.map(intern => ({
-        recipient: intern._id,
-        message: `New webinar scheduled: ${webinar.title} by ${host.firstName} ${host.lastName}`,
-        type: 'webinar',
-        link: webinar.meetingLink
-      }));
-    await Notification.insertMany(notifications);
+    // Respond immediately — notify interns asynchronously in batches
+    setImmediate(async () => {
+      try {
+        const internIds = await User.find({ userType: 'intern' }).select('_id');
+        const batchSize = 500;
+        for (let i = 0; i < internIds.length; i += batchSize) {
+          const batch = internIds.slice(i, i + batchSize).map(intern => ({
+            recipient: intern._id,
+            message: `New webinar scheduled: ${webinar.title} by ${host.firstName} ${host.lastName}`,
+            type: 'webinar',
+            link: webinar.meetingLink
+          }));
+          await Notification.insertMany(batch);
+        }
+      } catch (notifyErr) {
+        console.error('Failed to send webinar notifications:', notifyErr);
+      }
+    });
 
     res.status(201).json({
       success: true,
@@ -148,14 +157,45 @@ export const getWebinars = async (req: Request, res: Response) => {
     }
 
     const skip = (Number(page) - 1) * Number(limit);
-    const sort: any = {};
-    sort[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
+    let webinars;
 
-    const webinars = await Webinar.find(filter)
-      .populate('host', 'firstName lastName specialization isVerifiedDoctor profilePicture')
-      .sort(sort)
-      .skip(skip)
-      .limit(Number(limit));
+    if (sortBy === 'most_registered') {
+      webinars = await Webinar.aggregate([
+        { $match: filter },
+        { $addFields: { participantCount: { $size: { $ifNull: ["$participants", []] } } } },
+        { $sort: { participantCount: -1, scheduledAt: 1 } },
+        { $skip: skip },
+        { $limit: Number(limit) }
+      ]);
+      webinars = await Webinar.populate(webinars, [
+        { path: 'host', select: 'firstName lastName specialization isVerifiedDoctor profilePicture' }
+      ]);
+    } else if (sortBy === 'highest_rated') {
+      webinars = await Webinar.aggregate([
+        { $match: filter },
+        { 
+          $addFields: { 
+            avgRating: { 
+              $avg: "$participants.feedback.rating" 
+            } 
+          } 
+        },
+        { $sort: { avgRating: -1, scheduledAt: 1 } },
+        { $skip: skip },
+        { $limit: Number(limit) }
+      ]);
+      webinars = await Webinar.populate(webinars, [
+        { path: 'host', select: 'firstName lastName specialization isVerifiedDoctor profilePicture' }
+      ]);
+    } else {
+      const sort: any = {};
+      sort[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
+      webinars = await Webinar.find(filter)
+        .populate('host', 'firstName lastName specialization isVerifiedDoctor profilePicture')
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit));
+    }
 
     const total = await Webinar.countDocuments(filter);
 

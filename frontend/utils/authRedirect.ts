@@ -1,9 +1,13 @@
 import type { NextRouter } from "next/router";
+import { getGlobalToken } from "../context/AuthContext";
 
-export const protectedLandingPaths = ["/cases", "/jobs", "/webinars", "/leaderboard", "/about"];
+export const protectedLandingPaths = ["/cases", "/jobs", "/webinars", "/leaderboard"];
 
-export const hasAuthToken = () =>
-  typeof window !== "undefined" && Boolean(localStorage.getItem("token"));
+export const hasAuthToken = () => {
+  if (getGlobalToken()) return true;
+  if (typeof document === 'undefined') return false;
+  return document.cookie.split('; ').some(row => row.startsWith('auth_status='));
+};
 
 export const getLoginHref = (redirectPath: string) =>
   `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
@@ -26,7 +30,7 @@ export const getSafeRedirectPath = (redirect: string | string[] | undefined) => 
     return redirectPath;
   }
 
-  return "/dashboard";
+  return "/landing";
 };
 
 export const redirectToLogin = (router: NextRouter, redirectPath = getCurrentRedirectPath()) => {

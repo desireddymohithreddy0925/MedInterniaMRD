@@ -139,9 +139,16 @@ const calculateMentorStats = async (doctor: any): Promise<MentorStats> => {
 };
 
 // Get user profile
-export const getUserProfile = async (req: Request, res: Response) => {
+export const getUserProfile = async (req: AuthRequest, res: Response) => {
   try {
     const { userId } = req.params;
+
+    if (!req.user || (String(req.user._id) !== userId && req.user.userType !== 'admin')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: cannot view other users\' profiles'
+      });
+    }
 
     const user = await User.findById(userId)
       .select('-password')
@@ -223,6 +230,15 @@ export const getUserProfile = async (req: Request, res: Response) => {
   }
 };
 
+const ALLOWED_UPDATE_FIELDS = [
+  'firstName', 'lastName', 'phone', 'dateOfBirth', 'gender', 'address',
+  'bio', 'profilePicture', 'linkedInProfile', 'githubProfile',
+  'specialization', 'experience', 'qualifications',
+  'medicalSchool', 'yearOfStudy', 'interests', 'mentorDoctor',
+  'academicAchievements', 'careerGoals',
+  'emergencyContact', 'medicalHistory', 'allergies'
+];
+
 // Update user profile
 export const updateUserProfile = async (req: AuthRequest, res: Response) => {
   try {
@@ -237,15 +253,12 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const updateData = req.body;
-    
-    // Remove sensitive fields that shouldn't be updated via this endpoint
-    delete updateData.password;
-    delete updateData.email;
-    delete updateData.userType;
-    delete updateData.points;
-    delete updateData.averageRating;
-    delete updateData.isVerified;
+    const updateData: Record<string, any> = {};
+    for (const field of ALLOWED_UPDATE_FIELDS) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
 
     const user = await User.findByIdAndUpdate(
       userId,
@@ -275,9 +288,16 @@ export const updateUserProfile = async (req: AuthRequest, res: Response) => {
 };
 
 // Get intern scorecard
-export const getInternScorecard = async (req: Request, res: Response) => {
+export const getInternScorecard = async (req: AuthRequest, res: Response) => {
   try {
     const { userId } = req.params;
+
+    if (!req.user || (String(req.user._id) !== userId && req.user.userType !== 'admin')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: cannot view other users\' scorecards'
+      });
+    }
 
     const user = await User.findOne({ _id: userId, userType: 'intern' })
       .select('-password');
@@ -347,31 +367,53 @@ export const getInternScorecard = async (req: Request, res: Response) => {
 // Update streak
 export const updateUserStreak = async (userId: string) => {
   try {
-    const user = await User.findById(userId);
-    if (!user) return;
-
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
     // Check if user has activity today (comments, case posts, etc.)
     const todayActivity = await Case.findOne({
       $or: [
-        { doctor: userId, createdAt: { $gte: today.setHours(0, 0, 0, 0) } },
-        { 'comments.author': userId, 'comments.createdAt': { $gte: today.setHours(0, 0, 0, 0) } }
+        { doctor: userId, createdAt: { $gte: today } },
+        { 'comments.author': userId, 'comments.createdAt': { $gte: today } }
       ]
     });
 
-    if (todayActivity) {
-      user.streak += 1;
-      if (user.streak > user.longestStreak) {
-        user.longestStreak = user.streak;
-      }
-    } else {
-      user.streak = 0;
+    if (!todayActivity) {
+      // No activity today - reset streak
+      await User.findByIdAndUpdate(userId, { $set: { streak: 0 } });
+      return;
     }
 
-    await user.save();
+    // Check if user was already active today (streak already incremented)
+    const user = await User.findById(userId).select('streak longestStreak lastActivityDate');
+    if (!user) return;
+
+    const lastActive = user.lastActivityDate ? new Date(user.lastActivityDate) : null;
+    const lastActiveDate = lastActive ? new Date(lastActive.getFullYear(), lastActive.getMonth(), lastActive.getDate()) : null;
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (lastActiveDate && lastActiveDate.getTime() === todayDate.getTime()) {
+      // Already counted activity today - just update lastActivityDate, don't double increment
+      await User.findByIdAndUpdate(userId, { $set: { lastActivityDate: new Date() } });
+      return;
+    }
+
+    if (lastActiveDate && lastActiveDate.getTime() === yesterday.getTime()) {
+      // Consecutive day - increment streak
+      await User.findByIdAndUpdate(userId, {
+        $inc: { streak: 1 },
+        $max: { longestStreak: user.streak + 1 },
+        $set: { lastActivityDate: new Date() }
+      });
+    } else {
+      // First activity in a while - start new streak
+      await User.findByIdAndUpdate(userId, {
+        $set: { streak: 1, lastActivityDate: new Date() },
+        $max: { longestStreak: 1 }
+      });
+    }
 
     // Check for auto-badges
     await checkAndAwardAutoBadges(userId);
@@ -646,21 +688,23 @@ export const followUser = async (req: AuthRequest, res: Response) => {
     const myId = req.user._id;
     const { userId } = req.body;
     if (myId === userId) return res.status(400).json({ success: false, message: "Cannot follow yourself" });
-    const me = await User.findById(myId);
-    const other = await User.findById(userId);
+
+    const [me, other] = await Promise.all([
+      User.findById(myId).select('following'),
+      User.findById(userId).select('followers')
+    ]);
     if (!me || !other) return res.status(404).json({ success: false, message: "User not found" });
-    if ((me.following ?? []).map((id: any) => id.toString()).includes(userId)) {
+
+    // Check if already following using $addToSet check to avoid duplicates
+    if ((me.following ?? []).some((id: any) => id.toString() === userId)) {
       return res.status(400).json({ success: false, message: "Already following" });
     }
-    if ((other.followers ?? []).map((id: any) => id.toString()).includes(myId)) {
-      return res.status(400).json({ success: false, message: "Already followed" });
-    }
-    me.following = me.following ?? [];
-    other.followers = other.followers ?? [];
-    me.following.push(userId);
-    other.followers.push(myId as any);
-    await me.save();
-    await other.save();
+
+    await Promise.all([
+      User.findByIdAndUpdate(myId, { $addToSet: { following: userId } }),
+      User.findByIdAndUpdate(userId, { $addToSet: { followers: myId } })
+    ]);
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error following user" });
@@ -675,13 +719,12 @@ export const unfollowUser = async (req: AuthRequest, res: Response) => {
     }
     const myId = req.user._id;
     const { userId } = req.body;
-    const me = await User.findById(myId);
-    const other = await User.findById(userId);
-    if (!me || !other) return res.status(404).json({ success: false, message: "User not found" });
-    me.following = (me.following ?? []).filter((id: any) => id.toString() !== userId);
-    other.followers = (other.followers ?? []).filter((id: any) => id.toString() !== myId);
-    await me.save();
-    await other.save();
+
+    await Promise.all([
+      User.findByIdAndUpdate(myId, { $pull: { following: userId } }),
+      User.findByIdAndUpdate(userId, { $pull: { followers: myId } })
+    ]);
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error unfollowing user" });

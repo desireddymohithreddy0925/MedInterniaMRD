@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { authenticate, authorize } from '../middleware/auth';
+import { authenticate, authorize, optionalAuthenticate } from '../middleware/auth';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
 // Get all doctors
-router.get('/', authenticate, async (req: AuthRequest, res) => {
+router.get('/', optionalAuthenticate, async (req: AuthRequest, res) => {
   try {
     const { specialization } = req.query;
     
@@ -36,7 +36,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get doctor by ID
-router.get('/:id', authenticate, async (req: AuthRequest, res) => {
+router.get('/:id', optionalAuthenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -134,6 +134,27 @@ router.get('/meta/specializations', authenticate, async (req: AuthRequest, res) 
     });
   } catch (error) {
     console.error('Get specializations error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// Get mentees of a doctor
+router.get('/:id/mentees', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    const mentees = await User.find({ userType: 'intern', mentorDoctor: id, isActive: true })
+      .select('firstName lastName email medicalSchool yearOfStudy points averageRating streak');
+    res.json({
+      success: true,
+      data: {
+        mentees
+      }
+    });
+  } catch (error) {
+    console.error('Get mentees error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
