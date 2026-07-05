@@ -740,10 +740,10 @@ export const addComment = asyncHandler(
     const addedComment = caseData.comments[caseData.comments.length - 1];
 
     // Notify case owner if commenter is a different user
-    const caseAuthorId = (caseData as any).author?.toString();
-    if (caseAuthorId && caseAuthorId !== user._id.toString()) {
+    const caseOwnerId = caseData.doctor?.toString();
+    if (caseOwnerId && caseOwnerId !== user._id.toString()) {
       await createAndEmitNotification({
-        recipientId: caseAuthorId,
+        recipientId: caseOwnerId,
         type: "comment",
         message: `Someone commented on your case: "${(caseData as any).title}"`,
         link: `/cases/${id}`,
