@@ -28,7 +28,7 @@ export const getInternProfile = async (req: AuthRequest, res: Response) => {
       .select('_id title createdAt difficulty specialization')
       .sort({ createdAt: -1 })
       .limit(5))
-      .map((c) => ({
+      .map((c: any) => ({
         _id: c._id.toString(),
         title: c.title,
         createdAt: c.createdAt,
