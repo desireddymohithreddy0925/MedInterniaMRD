@@ -55,14 +55,24 @@ export default function TermsPage() {
     <Box
       sx={{
         flex: 1,
-        position:'relative',
         background:
           "linear-gradient(120deg, #e0eafc 0%, #f8f9fa 100%)",
         py: { xs: 6, md: 10 },
       }}
     >
       
-          <IconButton
+      <Container maxWidth="md">
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 3, md: 5 },
+            borderRadius: 5,
+            border: "1px solid rgba(33,147,176,0.12)",
+            boxShadow: "0 12px 36px rgba(33,147,176,0.14)",
+            position:'relative'
+          }}
+        >
+            <IconButton
             onClick={() => router.back()}
             aria-label="close"
             sx={{
@@ -75,22 +85,12 @@ export default function TermsPage() {
                 color: "#0072ff",
                  backgroundColor: "rgba(0, 114, 255, 0.08)",
                 transform: "scale(1.05)",
+              
               },
             }}
           >
             <X size={22} />
           </IconButton>
-      
-      <Container maxWidth="md">
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 3, md: 5 },
-            borderRadius: 5,
-            border: "1px solid rgba(33,147,176,0.12)",
-            boxShadow: "0 12px 36px rgba(33,147,176,0.14)",
-          }}
-        >
           
           {/* Header */}
           <Stack

@@ -36,7 +36,7 @@ export default function PrivacyPage() {
           }}
         >
           <IconButton
-            onClick={() => router.back()} // Triggers browser back path
+            onClick={() => router.back()}
             aria-label="close"
             sx={{
               position: "absolute",
