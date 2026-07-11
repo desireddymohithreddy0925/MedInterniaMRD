@@ -625,6 +625,48 @@ export default function CaseDiscussion({ id: propId, modalMode, hideDescription 
                 </Box>
               )}
 
+              {caseData.attachments && caseData.attachments.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant="h6" fontWeight={800} sx={{ mb: 2, color: 'primary.dark' }}>
+                    Supporting Media
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {caseData.attachments.map((att: any, idx: number) => (
+                      <Grid size={{ xs: 12, sm: att.type === 'audio' ? 12 : 6 }} key={`att-${idx}`}>
+                        <Card sx={{ borderRadius: 3, border: '1px solid #e2e8f0', boxShadow: '0 2px 10px rgba(0,0,0,0.01)', overflow: 'hidden', p: att.type === 'audio' ? 2 : 0 }}>
+                          {att.type === 'image' && (
+                            <CardMedia
+                              component="img"
+                              image={att.url}
+                              alt={`Clinical supporting media ${idx + 1}`}
+                              sx={{ height: 260, objectFit: 'cover', cursor: 'pointer', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.02)' } }}
+                              onClick={() => window.open(att.url, '_blank')}
+                            />
+                          )}
+                          {att.type === 'video' && (
+                            <video
+                              src={att.url}
+                              controls
+                              style={{ width: '100%', maxHeight: 260, objectFit: 'contain', backgroundColor: '#000' }}
+                            />
+                          )}
+                          {att.type === 'audio' && (
+                            <Box sx={{ width: '100%' }}>
+                              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>Audio Attachment</Typography>
+                              <audio
+                                src={att.url}
+                                controls
+                                style={{ width: '100%' }}
+                              />
+                            </Box>
+                          )}
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
               {/* AI Clinical Insights card */}
               <Card
                 sx={{

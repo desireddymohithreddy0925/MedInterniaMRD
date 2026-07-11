@@ -30,6 +30,11 @@ export interface ICase extends Document {
   diagnosis?: string;
   treatment?: string;
   images?: string[];
+  attachments?: {
+    url: string;
+    type: 'image' | 'video' | 'audio';
+    publicId?: string;
+  }[];
   tags: string[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   specialization: string;
@@ -168,6 +173,11 @@ const CaseSchema = new Schema<ICase>({
   images: [{
     type: String,
     trim: true
+  }],
+  attachments: [{
+    url: { type: String, required: true },
+    type: { type: String, enum: ['image', 'video', 'audio'], required: true },
+    publicId: { type: String }
   }],
   tags: [{
     type: String,

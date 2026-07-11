@@ -14,6 +14,7 @@ import {
 import { analyzeCase } from "../services/aiTaggerService";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
+import { uploadCaseAttachment } from "../utils/cloudinary";
 
 const canModerateComments = (userType?: string) =>
   ["admin", "doctor", "moderator"].includes(userType ?? "");
@@ -375,6 +376,40 @@ export const rateComment = asyncHandler(
   },
 );
 
+// Upload a case attachment
+export const uploadAttachment = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError("User not authenticated", 401);
+    }
+    if (!req.file) {
+      throw new AppError("No file uploaded", 400);
+    }
+
+    const uploadResult = await uploadCaseAttachment(req.file, String(req.user._id));
+    
+    // Determine attachment type from resource_type or mimetype
+    let type = 'image';
+    if (uploadResult.resource_type === 'video') {
+      if (req.file.mimetype.startsWith('audio/')) {
+        type = 'audio';
+      } else {
+        type = 'video';
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Attachment uploaded successfully",
+      data: {
+        url: uploadResult.secure_url,
+        type,
+        publicId: uploadResult.public_id,
+      },
+    });
+  }
+);
+
 // Create a new case (Doctor only)
 export const createCase = asyncHandler(
   async (req: AuthRequest, res: Response) => {
@@ -397,6 +432,7 @@ export const createCase = asyncHandler(
       description,
       patientInfo,
       images,
+      attachments,
       specialization,
     } = req.body;
 
@@ -415,6 +451,7 @@ export const createCase = asyncHandler(
         diagnosis: aiAnalysis.diagnosis,
         treatment: aiAnalysis.treatment,
         images: images || [],
+        attachments: attachments || [],
         tags: aiAnalysis.tags,
         difficulty: aiAnalysis.difficulty,
         specialization: aiAnalysis.specialty || spec,
@@ -458,6 +495,7 @@ export const createCase = asyncHandler(
       diagnosis: aiAnalysis.diagnosis,
       treatment: aiAnalysis.treatment,
       images: images || [],
+      attachments: attachments || [],
       tags: aiAnalysis.tags,
       difficulty: aiAnalysis.difficulty,
       specialization: aiAnalysis.specialty || spec,
