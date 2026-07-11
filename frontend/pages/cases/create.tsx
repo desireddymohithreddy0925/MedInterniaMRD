@@ -18,12 +18,14 @@ import {
   Grid,
   Chip,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  Menu
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import api from "../../utils/api";
 import { useRouter } from "next/router";
 import PageHeader from "../../components/layout/PageHeader";
+import PhiWarningModal, { PhiFinding } from "../../components/PhiWarningModal";
 
 const SPECIALTIES = [
   "General Medicine",
@@ -64,6 +66,9 @@ export default function CreateCase() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
+  const [phiModalOpen, setPhiModalOpen] = useState(false);
+  const [phiFindings, setPhiFindings] = useState<PhiFinding[]>([]);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   const router = useRouter();
 
@@ -143,10 +148,31 @@ export default function CreateCase() {
     }
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: any, bypassPhi = false) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // --- PHI Scan Gate ---
+    if (!bypassPhi) {
+      const scanText = `${form.title} ${form.description}`;
+      try {
+        const token = localStorage.getItem("token");
+        const scanRes = await api.post("/phi/scan", { text: scanText }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (scanRes.data.data.hasPhi) {
+          setPhiFindings(scanRes.data.data.findings);
+          setPhiModalOpen(true);
+          // Store the event so we can reuse it after the user decides
+          setPendingSubmit(true);
+          return;
+        }
+      } catch {
+        // If scan fails silently, proceed with submission
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -523,6 +549,45 @@ export default function CreateCase() {
           }
         `}</style>
       </Backdrop>
+
+      {/* PHI Warning Modal */}
+      <PhiWarningModal
+        open={phiModalOpen}
+        findings={phiFindings}
+        onClose={() => {
+          setPhiModalOpen(false);
+          setPendingSubmit(false);
+        }}
+        onRedactAndContinue={async () => {
+          setPhiModalOpen(false);
+          // Auto-redact title and description
+          try {
+            const token = localStorage.getItem("token");
+            const titleRes = await api.post("/phi/redact", { text: form.title }, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const descRes = await api.post("/phi/redact", { text: form.description }, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setForm(prev => ({
+              ...prev,
+              title: titleRes.data.data.redacted,
+              description: descRes.data.data.redacted
+            }));
+            // Trigger submit bypassing PHI check
+            const fakeEvent = { preventDefault: () => {} };
+            await handleSubmit(fakeEvent as any, true);
+          } catch {
+            setError("Failed to auto-redact. Please review and remove PHI manually.");
+          }
+        }}
+        onPublishAnyway={async () => {
+          setPhiModalOpen(false);
+          const fakeEvent = { preventDefault: () => {} };
+          await handleSubmit(fakeEvent as any, true);
+        }}
+      />
     </Box>
   );
 }
+
