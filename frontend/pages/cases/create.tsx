@@ -26,7 +26,6 @@ import api from "../../utils/api";
 import { useRouter } from "next/router";
 import PageHeader from "../../components/layout/PageHeader";
 import PhiWarningModal, { PhiFinding } from "../../components/PhiWarningModal";
-import { Menu } from "@mui/material";
 
 const SOAP_TEMPLATE = `**Subjective:**
 - Chief Complaint: 
