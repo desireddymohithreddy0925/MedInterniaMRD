@@ -29,7 +29,6 @@ import {
   solveCase,
   getRecommendedCases,
   getFlaggedComments,
-  getFlaggedComments,
   moderateComment,
   uploadAttachment
 } from '../controllers/caseController';
