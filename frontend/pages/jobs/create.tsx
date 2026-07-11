@@ -93,24 +93,24 @@ export default function CreateJob() {
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField label="Title" name="title" fullWidth value={form.title} onChange={handleChange} required />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField label="Company" name="company" fullWidth value={form.company} onChange={handleChange} required />
             </Grid>
 
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField label="City" name="locationCity" fullWidth value={form.locationCity} onChange={handleChange} required />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField label="State" name="locationState" fullWidth value={form.locationState} onChange={handleChange} required />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField label="Country" name="locationCountry" fullWidth value={form.locationCountry} onChange={handleChange} required />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField select label="Job Type" name="type" fullWidth value={form.type} onChange={handleChange} required>
                 <MenuItem value="full-time">Full-time</MenuItem>
                 <MenuItem value="part-time">Part-time</MenuItem>
@@ -118,7 +118,7 @@ export default function CreateJob() {
                 <MenuItem value="fellowship">Fellowship</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField select label="Specialization" name="specialization" fullWidth value={form.specialization} onChange={handleChange} required>
                 <MenuItem value="general">General</MenuItem>
                 <MenuItem value="cardiology">Cardiology</MenuItem>
@@ -129,34 +129,34 @@ export default function CreateJob() {
               </TextField>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField label="Description" name="description" fullWidth value={form.description} onChange={handleChange} required multiline rows={4} />
             </Grid>
 
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField label="Education Requirement" name="education" fullWidth value={form.education} onChange={handleChange} required />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField label="Experience Description" name="experience" placeholder="e.g. 2 years in ICU" fullWidth value={form.experience} onChange={handleChange} required />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField label="Years of Experience (Numeric)" name="yearsOfExperience" type="number" fullWidth value={form.yearsOfExperience} onChange={handleChange} required />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField label="Application Deadline" name="applicationDeadline" type="date" InputLabelProps={{ shrink: true }} fullWidth value={form.applicationDeadline} onChange={handleChange} required />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField label="Contact Email" name="contactEmail" type="email" fullWidth value={form.contactEmail} onChange={handleChange} required />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControlLabel
                 control={<Switch checked={form.isRemote} onChange={handleChange} name="isRemote" />}
                 label="Is Remote?"
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControlLabel
                 control={<Switch checked={form.visaSponsorship} onChange={handleChange} name="visaSponsorship" />}
                 label="Offers Visa Sponsorship?"
