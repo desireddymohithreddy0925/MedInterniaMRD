@@ -38,6 +38,7 @@ export interface ICase extends Document {
   likes: mongoose.Types.ObjectId[];
   isActive: boolean;
   isRareDisease?: boolean;
+  isAnonymous?: boolean;
   isPatientCase: boolean; // True if posted by patient
   moderationStatus: 'pending' | 'approved' | 'rejected' | 'changes_requested';
   moderationReason?: string;
@@ -200,6 +201,10 @@ const CaseSchema = new Schema<ICase>({
     default: true
   },
   isRareDisease: {
+    type: Boolean,
+    default: false
+  },
+  isAnonymous: {
     type: Boolean,
     default: false
   },

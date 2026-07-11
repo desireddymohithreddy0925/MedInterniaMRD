@@ -56,6 +56,7 @@ export default function CreateCase() {
     tags: [] as string[],
     symptoms: [] as string[],
     isRareDisease: false,
+    isAnonymous: false,
   });
 
   const [images, setImages] = useState<string[]>([]);
@@ -63,6 +64,7 @@ export default function CreateCase() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
+  const [isVerifiedDoctor, setIsVerifiedDoctor] = useState(false);
 
   const router = useRouter();
 
@@ -78,6 +80,20 @@ export default function CreateCase() {
     }
     return () => clearInterval(interval);
   }, [loading]);
+
+  useEffect(() => {
+    try {
+      const storedUserStr = localStorage.getItem("user");
+      if (storedUserStr) {
+        const storedUser = JSON.parse(storedUserStr);
+        if (storedUser.isVerifiedDoctor) {
+          setIsVerifiedDoctor(true);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   const handleChange = (e: any) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -249,9 +265,30 @@ export default function CreateCase() {
                       Mark as Rare/Orphan Disease (helps specialists discover unique cases)
                     </Typography>
                   }
-                  sx={{ mb: 2 }}
+                  sx={{ mb: 0 }}
                 />
               </Grid>
+
+              {isVerifiedDoctor && (
+                <Grid size={{ xs: 12 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={form.isAnonymous}
+                        onChange={handleChange}
+                        name="isAnonymous"
+                        color="secondary"
+                      />
+                    }
+                    label={
+                      <Typography variant="body1" fontWeight={600} color="text.primary">
+                        Post Anonymously (Hide your identity from the public feed)
+                      </Typography>
+                    }
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+              )}
 
               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: "text.primary" }}>

@@ -28,6 +28,25 @@ const publicCaseFilter = {
   ],
 };
 
+const redactAnonymousCase = (c: any) => {
+  if (!c) return c;
+  const caseObj = c.toObject ? c.toObject() : c;
+  if (caseObj.isAnonymous && caseObj.doctor) {
+    caseObj.doctor = {
+      _id: null,
+      firstName: "Anonymous",
+      lastName: "Doctor",
+      specialization: "Unknown",
+      userType: "doctor"
+    };
+  }
+  return caseObj;
+};
+
+const redactAnonymousCases = (cases: any[]) => {
+  return cases.map(redactAnonymousCase);
+};
+
 export const scheduleAICasePost = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const user = req.user as { _id: string; userType?: string } | undefined;
@@ -399,6 +418,7 @@ export const createCase = asyncHandler(
       images,
       specialization,
       isRareDisease,
+      isAnonymous,
     } = req.body;
 
     const spec = specialization || user.specialization || "General Medicine";
@@ -452,6 +472,10 @@ export const createCase = asyncHandler(
     }
 
     // Doctor case creation (full features)
+    const dbUser = await User.findById(user._id);
+    const canBeAnonymous = dbUser?.isVerifiedDoctor === true;
+    const finalIsAnonymous = canBeAnonymous ? (isAnonymous === true) : false;
+
     const newCase = new Case({
       title,
       description,
@@ -466,6 +490,7 @@ export const createCase = asyncHandler(
       doctor: user._id as any,
       isPatientCase: false,
       isRareDisease: isRareDisease === true,
+      isAnonymous: finalIsAnonymous,
       moderationStatus: "approved",
       moderationAuditTrail: [
         {
@@ -580,7 +605,7 @@ export const getCases = asyncHandler(
     res.json({
       success: true,
       data: {
-        cases,
+        cases: redactAnonymousCases(cases),
         pagination: {
           page: pageNum,
           limit: limitNum,
@@ -628,7 +653,7 @@ export const getCaseById = asyncHandler(
     res.json({
       success: true,
       data: {
-        case: caseObj,
+        case: redactAnonymousCase(caseObj),
       },
     });
   },
