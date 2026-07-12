@@ -25,7 +25,7 @@ export default function Messages() {
   return (
     <>
     <Navbar />
-    <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', bgcolor: '#f1f5f9' }}>
+    <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', bgcolor: '#f1f5f9', color: '#0f172a' }}>
       
       {/* Sidebar: Contacts List */}
       <Box sx={{ width: 320, bgcolor: 'white', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
@@ -130,7 +130,7 @@ export default function Messages() {
           <Box sx={{ display: 'flex', gap: 2, maxWidth: '75%' }}>
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '14px' }}>E</Avatar>
             <Box>
-              <Paper sx={{ p: 1.5, bgcolor: 'white', borderRadius: '0 16px 16px 16px', border: '1px solid #e2e8f0' }}>
+              <Paper sx={{ p: 1.5, bgcolor: 'white', color: '#0f172a', borderRadius: '0 16px 16px 16px', border: '1px solid #e2e8f0' }}>
                 <Typography variant="body2">Hi! Are you free to discuss the neo-adjuvant case off the record?</Typography>
               </Paper>
               <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, ml: 1, display: 'block' }}>10:45 AM</Typography>
