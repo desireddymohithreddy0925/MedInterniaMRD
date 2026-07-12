@@ -392,6 +392,7 @@ export default function Navbar({ route }: { route?: string }) {
             />
             <Typography
               variant="h6"
+              suppressHydrationWarning
               sx={{
                 fontWeight: 700,
                 letterSpacing: 0.5,
@@ -399,7 +400,7 @@ export default function Navbar({ route }: { route?: string }) {
                 color: 'text.primary',
               }}
             >
-              {t('navbar.brand')}
+              {t('navbar.brand', 'MedInternia')}
             </Typography>
           </Box>
 
