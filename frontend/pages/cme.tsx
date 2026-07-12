@@ -70,7 +70,7 @@ export default function CMEDashboard() {
         <Grid container spacing={4}>
           
           {/* Progress Overview */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0', height: '100%' }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>Your Progress</Typography>
               
@@ -100,7 +100,7 @@ export default function CMEDashboard() {
           </Grid>
 
           {/* Activity Log */}
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
               <Box sx={{ p: 3, borderBottom: '1px solid #e2e8f0', bgcolor: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h6" fontWeight={700}>Recent Educational Activity</Typography>
