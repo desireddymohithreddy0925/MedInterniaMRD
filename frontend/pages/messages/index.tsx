@@ -10,7 +10,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import KeyIcon from '@mui/icons-material/Key';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SearchIcon from '@mui/icons-material/Search';
-import Navbar from '../components/Navbar';
+import Navbar from '../../components/Navbar';
 
 export default function Messages() {
   const [activeChat, setActiveChat] = useState(1);
