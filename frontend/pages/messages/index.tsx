@@ -15,6 +15,35 @@ import Navbar from '../../components/Navbar';
 export default function Messages() {
   const [activeChat, setActiveChat] = useState(1);
   const [message, setMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([
+    {
+      id: 1,
+      sender: 'Emily',
+      text: 'Hi! Are you free to discuss the neo-adjuvant case off the record?',
+      time: '10:45 AM',
+      me: false,
+    },
+    {
+      id: 2,
+      sender: 'You',
+      text: 'Yes, absolutely. Since this chat is E2E encrypted, we can discuss the specifics.',
+      time: '10:47 AM',
+      me: true,
+    }
+  ]);
+
+  const handleSendMessage = () => {
+    if (!message.trim()) return;
+    
+    setChatHistory([...chatHistory, {
+      id: Date.now(),
+      sender: 'You',
+      text: message,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      me: true
+    }]);
+    setMessage('');
+  };
 
   const contacts = [
     { id: 1, name: 'Dr. Emily Carter', role: 'Surgery', unread: 2, online: true },
@@ -127,27 +156,31 @@ export default function Messages() {
             </Paper>
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, maxWidth: '75%' }}>
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '14px' }}>E</Avatar>
-            <Box>
-              <Paper sx={{ p: 1.5, bgcolor: 'white', color: '#0f172a', borderRadius: '0 16px 16px 16px', border: '1px solid #e2e8f0' }}>
-                <Typography variant="body2">Hi! Are you free to discuss the neo-adjuvant case off the record?</Typography>
-              </Paper>
-              <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, ml: 1, display: 'block' }}>10:45 AM</Typography>
-            </Box>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 2, maxWidth: '75%', alignSelf: 'flex-end', flexDirection: 'row-reverse' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <Paper sx={{ p: 1.5, bgcolor: 'primary.main', color: 'white', borderRadius: '16px 0 16px 16px' }}>
-                <Typography variant="body2">Yes, absolutely. Since this chat is E2E encrypted, we can discuss the specifics.</Typography>
-              </Paper>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, mr: 1 }}>
-                <Typography variant="caption" color="text.disabled">10:47 AM</Typography>
-                <LockIcon sx={{ fontSize: 10, color: 'text.disabled' }} />
+          {chatHistory.map((msg) => (
+            msg.me ? (
+              <Box key={msg.id} sx={{ display: 'flex', gap: 2, maxWidth: '75%', alignSelf: 'flex-end', flexDirection: 'row-reverse' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <Paper sx={{ p: 1.5, bgcolor: 'primary.main', color: 'white', borderRadius: '16px 0 16px 16px' }}>
+                    <Typography variant="body2">{msg.text}</Typography>
+                  </Paper>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5, mr: 1 }}>
+                    <Typography variant="caption" color="text.disabled">{msg.time}</Typography>
+                    <LockIcon sx={{ fontSize: 10, color: 'text.disabled' }} />
+                  </Box>
+                </Box>
               </Box>
-            </Box>
-          </Box>
+            ) : (
+              <Box key={msg.id} sx={{ display: 'flex', gap: 2, maxWidth: '75%' }}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '14px' }}>E</Avatar>
+                <Box>
+                  <Paper sx={{ p: 1.5, bgcolor: 'white', color: '#0f172a', borderRadius: '0 16px 16px 16px', border: '1px solid #e2e8f0' }}>
+                    <Typography variant="body2">{msg.text}</Typography>
+                  </Paper>
+                  <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, ml: 1, display: 'block' }}>{msg.time}</Typography>
+                </Box>
+              </Box>
+            )
+          ))}
 
         </Box>
 
@@ -158,9 +191,15 @@ export default function Messages() {
             placeholder="Type an encrypted message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
             InputProps={{
               endAdornment: (
-                <IconButton color="primary" sx={{ bgcolor: 'primary.50', '&:hover': { bgcolor: 'primary.100' } }}>
+                <IconButton onClick={handleSendMessage} color="primary" sx={{ bgcolor: 'primary.50', '&:hover': { bgcolor: 'primary.100' } }}>
                   <SendIcon />
                 </IconButton>
               ),
