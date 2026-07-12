@@ -5,12 +5,14 @@ import type { AppRole } from '../middleware/permissions';
 export interface IUser extends Document {
   following?: mongoose.Types.ObjectId[];
   followers?: mongoose.Types.ObjectId[];
+  solvedCases?: mongoose.Types.ObjectId[];
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   passwordResetToken?: string;
 passwordResetExpires?: Date;
+  passwordChangedAt?: Date;
   loginAttempts?: number;
   lockoutUntil?: Date | null;
   userType: AppRole;
@@ -42,6 +44,13 @@ passwordResetExpires?: Date;
   certificatesEarned: number;
   linkedInProfile?: string;
   githubProfile?: string;
+  orcidId?: string;
+  publications?: {
+    title: string;
+    year: string;
+    journal: string;
+    url: string;
+  }[];
   bio?: string;
   profilePicture?: string;
   // Doctor specific fields
@@ -70,6 +79,7 @@ passwordResetExpires?: Date;
   // Common fields
   isActive: boolean;
   isVerified: boolean;
+  messagePrivacy?: 'anyone' | 'verified_only' | 'none';
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -92,6 +102,7 @@ const EmergencyContactSchema = new Schema({
 const UserSchema = new Schema<IUser>({
   following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  solvedCases: [{ type: Schema.Types.ObjectId, ref: 'Case' }],
   firstName: {
     type: String,
     required: [true, 'First name is required'],
@@ -133,6 +144,10 @@ passwordResetExpires: {
   type: Date,
   select: false
 },
+  passwordChangedAt: {
+    type: Date,
+    select: false
+  },
   loginAttempts: {
     type: Number,
     default: 0
@@ -235,6 +250,15 @@ passwordResetExpires: {
     type: String,
     match: [/^https:\/\/(www\.)?github\.com\/.*/, 'Please provide a valid GitHub URL']
   },
+  orcidId: {
+    type: String,
+  },
+  publications: [{
+    title: { type: String },
+    year: { type: String },
+    journal: { type: String },
+    url: { type: String }
+  }],
   bio: {
     type: String,
     maxlength: [500, 'Bio cannot exceed 500 characters']
@@ -320,6 +344,11 @@ passwordResetExpires: {
   isVerified: {
     type: Boolean,
     default: false
+  },
+  messagePrivacy: {
+    type: String,
+    enum: ['anyone', 'verified_only', 'none'],
+    default: 'anyone'
   }
 }, {
   timestamps: true

@@ -1,4 +1,8 @@
 import axios from 'axios';
+import { getGlobalToken, setGlobalToken } from '../context/AuthContext';
+
+// Maintain backward compatibility for files importing getAuthToken
+export const getAuthToken = (): string | null => getGlobalToken();
 
 const ensureApiPath = (baseUrl: string): string => {
   const normalized = baseUrl.replace(/\/+$/, '');
@@ -14,21 +18,13 @@ const API_BASE_URL = ensureApiPath(rawBaseUrl);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
 });
-
-export const getAuthToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    return localStorage.getItem('token');
-  } catch {
-    return null;
-  }
-};
 
 // Add interceptor to include JWT token in all requests
 api.interceptors.request.use(
   (config) => {
-    const token = getAuthToken();
+    const token = getGlobalToken();
     if (token) {
       config.headers = config.headers || {};
       config.headers['Authorization'] = `Bearer ${token}`;
@@ -37,7 +33,34 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+let isRedirectingToLogin = false;
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const requestUrl: string = error.config?.url || '';
+
+    const isSessionBootstrapCheck = requestUrl.includes('/auth/validate-token');
+
+    if (
+      status === 401 &&
+      !isSessionBootstrapCheck &&
+      typeof window !== 'undefined'
+    ) {
+      setGlobalToken(null);
+
+      const alreadyOnLoginPage = window.location.pathname.startsWith('/auth/login');
+      if (!isRedirectingToLogin && !alreadyOnLoginPage) {
+        isRedirectingToLogin = true;
+        const redirectPath = `${window.location.pathname}${window.location.search}`;
+        window.location.href = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 // Fetch intern profile
 export const getInternProfile = async () => {
