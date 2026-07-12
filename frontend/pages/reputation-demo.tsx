@@ -10,7 +10,7 @@ import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import Navbar from '../components/Navbar';
 
 export default function ReputationDemo() {
-  const [votes, setVotes] = useState({
+  const [votes, setVotes] = useState<Record<number, number>>({
     1: 42,
     2: -3,
     3: 15
