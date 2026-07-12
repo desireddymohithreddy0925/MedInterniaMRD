@@ -29,6 +29,10 @@ export default function HandoffTool() {
     setPatients([...patients, { id: Date.now(), room: '', name: '', severity: 'Stable', summary: '', actions: '', situation: '', synthesis: '' }]);
   };
 
+  const removePatient = (id: number) => {
+    setPatients(patients.filter(p => p.id !== id));
+  };
+
   const getSeverityColor = (severity: string) => {
     if (severity === 'Unstable') return 'error';
     if (severity === 'Watcher') return 'warning';
@@ -77,7 +81,9 @@ export default function HandoffTool() {
                   <Typography variant="h6" fontWeight={800} color="#0f172a">
                     Patient {index + 1}
                   </Typography>
-                  <IconButton color="error" size="small"><DeleteOutlineIcon /></IconButton>
+                  <IconButton color="error" size="small" onClick={() => removePatient(patient.id)}>
+                    <DeleteOutlineIcon />
+                  </IconButton>
                 </Box>
                 
                 <Grid container spacing={3}>
