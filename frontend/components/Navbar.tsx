@@ -23,6 +23,7 @@ import DatasetIcon from '@mui/icons-material/Dataset';
 import Image from 'next/image';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import WorkIcon from '@mui/icons-material/Work';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -197,6 +198,7 @@ export default function Navbar({ route }: { route?: string }) {
     ...(isLoggedIn
       ? [{ href: '/cases', icon: <FolderOpenIcon />, label: t('navbar.cases') }]
       : []),
+    { href: '/cme', icon: <WorkspacePremiumIcon />, label: 'CME Tracker' },
     { href: '/learning-paths', icon: <BookIcon />, label: t('navbar.learningPaths') },
     { href: '/patients', icon: <DatasetIcon />, label: t('navbar.patients') },
     { href: '/doctors', icon: <WorkIcon />, label: t('navbar.doctors') },
@@ -211,6 +213,7 @@ export default function Navbar({ route }: { route?: string }) {
     ...(isLoggedIn
       ? [{ href: '/cases', icon: <FolderOpenIcon />, label: t('navbar.cases') }]
       : []),
+    { href: '/cme', icon: <WorkspacePremiumIcon />, label: 'CME Tracker' },
     { href: '/learning-paths', icon: <BookIcon />, label: t('navbar.learningPaths') },
     { href: '/patients', icon: <DatasetIcon />, label: t('navbar.patients') },
     { href: '/doctors', icon: <WorkIcon />, label: t('navbar.doctors') },
