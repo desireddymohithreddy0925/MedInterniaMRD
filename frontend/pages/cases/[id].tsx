@@ -22,7 +22,7 @@ import {
   Tabs,
   Tab
 } from '@mui/material';
-import { MessageCircleReply, Pin, CheckCircle2, Sparkles, Lock } from 'lucide-react';
+import { MessageCircleReply, Pin, CheckCircle2, Sparkles, BookmarkPlus, Lock } from 'lucide-react';
 import SchoolIcon from '@mui/icons-material/School';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PushPinIcon from '@mui/icons-material/PushPin';
@@ -35,6 +35,7 @@ import api from '../../utils/api';
 import PdfExportButton from '../../components/PdfExportButton';
 import OfflineSaveButton from '../../components/OfflineSaveButton';
 import ClinicalTimeline from '../../components/ClinicalTimeline';
+import AddToCollectionModal from '../../components/AddToCollectionModal';
 
 export default function CaseDiscussion({ id: propId, modalMode, hideDescription }: { id?: string, modalMode?: boolean, hideDescription?: boolean }) {
   const router = useRouter();
@@ -48,6 +49,7 @@ export default function CaseDiscussion({ id: propId, modalMode, hideDescription 
   const [activeTab, setActiveTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedComment, setSelectedComment] = useState<any>(null);
+  const [collectionModalOpen, setCollectionModalOpen] = useState(false);
 
   const [replyTo, setReplyTo] = useState<any>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -485,6 +487,15 @@ export default function CaseDiscussion({ id: propId, modalMode, hideDescription 
                 {caseData.title}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  startIcon={<BookmarkPlus size={16} />}
+                  onClick={() => setCollectionModalOpen(true)}
+                  sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600, borderColor: 'primary.main', color: 'primary.main' }}
+                >
+                  Save
+                </Button>
                 <OfflineSaveButton caseId={caseData._id || id as string} caseData={caseData} />
                 <PdfExportButton caseData={caseData} discussions={allDiscussions} />
                 <Tooltip title="Create Flashcard from this case">
@@ -827,6 +838,15 @@ export default function CaseDiscussion({ id: propId, modalMode, hideDescription 
           </Card>
         </Grid>
       </Grid>
+      
+      {/* Add To Collection Modal */}
+      {id && (
+        <AddToCollectionModal 
+          open={collectionModalOpen} 
+          onClose={() => setCollectionModalOpen(false)} 
+          caseId={id as string} 
+        />
+      )}
     </Container>
   );
 }
