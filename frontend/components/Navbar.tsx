@@ -26,6 +26,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import WorkIcon from '@mui/icons-material/Work';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import MenuIcon from '@mui/icons-material/Menu';
+import ChatIcon from '@mui/icons-material/Chat';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import ProfileDropdown from './ProfileDropdown';
@@ -194,6 +195,7 @@ export default function Navbar({ route }: { route?: string }) {
     ...(isLoggedIn
       ? [{ href: '/cases', icon: <FolderOpenIcon />, label: 'Cases' }]
       : []),
+    { href: '/messages', icon: <ChatIcon />, label: 'Messages' },
     { href: '/diaries', icon: <BookIcon />, label: 'Diaries' },
     { href: '/upload-raw', icon: <DatasetIcon />, label: 'Upload Raw' },
     { href: '/jobs', icon: <WorkIcon />, label: 'Jobs' },
@@ -206,6 +208,7 @@ export default function Navbar({ route }: { route?: string }) {
     ...(isLoggedIn
       ? [{ href: '/cases', icon: <FolderOpenIcon />, label: 'Cases' }]
       : []),
+    { href: '/messages', icon: <ChatIcon />, label: 'Messages' },
     { href: '/jobs', icon: <WorkIcon />, label: 'Jobs' },
     { href: '/webinars', icon: <VideocamIcon />, label: 'Webinars' },
     { href: '/research_paper', icon: <ArticleIcon />, label: 'Research Paper' },
