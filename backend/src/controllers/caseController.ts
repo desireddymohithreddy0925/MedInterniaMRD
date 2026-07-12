@@ -15,6 +15,7 @@ import { analyzeCase } from "../services/aiTaggerService";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { uploadCaseAttachment } from "../utils/cloudinary";
+import { parseAdvancedSearch } from "../utils/searchParser";
 
 const canModerateComments = (userType?: string) =>
   ["admin", "doctor", "moderator"].includes(userType ?? "");
@@ -615,11 +616,11 @@ export const getCases = asyncHandler(
     }
 
     if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { tags: { $in: [new RegExp(search as string, "i")] } },
-      ];
+      const advancedFilters = parseAdvancedSearch(search as string);
+      if (Object.keys(advancedFilters).length > 0) {
+        filter.$and = filter.$and || [];
+        filter.$and.push(advancedFilters);
+      }
     }
 
     const pageNum = parseInt(page as string);
