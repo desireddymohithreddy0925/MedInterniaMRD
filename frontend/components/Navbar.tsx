@@ -196,13 +196,13 @@ export default function Navbar({ route }: { route?: string }) {
 
   const navItems = [
     ...(isLoggedIn
-      ? [{ href: '/cases', icon: <FolderOpenIcon />, label: t('navbar.cases') }]
+      ? [{ href: '/cases', icon: <FolderOpenIcon />, label: t('navbar.cases', 'Cases') }]
       : []),
     { href: '/cme', icon: <WorkspacePremiumIcon />, label: 'CME Tracker' },
-    { href: '/learning-paths', icon: <BookIcon />, label: t('navbar.learningPaths') },
-    { href: '/patients', icon: <DatasetIcon />, label: t('navbar.patients') },
-    { href: '/doctors', icon: <WorkIcon />, label: t('navbar.doctors') },
-    { href: '/webinars', icon: <VideocamIcon />, label: t('navbar.webinars') },
+    { href: '/learning-paths', icon: <BookIcon />, label: t('navbar.learningPaths', 'Learning Paths') },
+    { href: '/patients', icon: <DatasetIcon />, label: t('navbar.patients', 'Patients') },
+    { href: '/doctors', icon: <WorkIcon />, label: t('navbar.doctors', 'Doctors') },
+    { href: '/webinars', icon: <VideocamIcon />, label: t('navbar.webinars', 'Webinars') },
     { href: '/mentorship', icon: <ArticleIcon />, label: 'Mentorship' },
     { href: '/research_paper', icon: <ArticleIcon />, label: 'Research Paper' },
     { href: '/diaries', icon: <BookIcon />, label: 'Diaries' },
@@ -211,13 +211,13 @@ export default function Navbar({ route }: { route?: string }) {
 
   const mobileNavItems = [
     ...(isLoggedIn
-      ? [{ href: '/cases', icon: <FolderOpenIcon />, label: t('navbar.cases') }]
+      ? [{ href: '/cases', icon: <FolderOpenIcon />, label: t('navbar.cases', 'Cases') }]
       : []),
     { href: '/cme', icon: <WorkspacePremiumIcon />, label: 'CME Tracker' },
-    { href: '/learning-paths', icon: <BookIcon />, label: t('navbar.learningPaths') },
-    { href: '/patients', icon: <DatasetIcon />, label: t('navbar.patients') },
-    { href: '/doctors', icon: <WorkIcon />, label: t('navbar.doctors') },
-    { href: '/webinars', icon: <VideocamIcon />, label: t('navbar.webinars') },
+    { href: '/learning-paths', icon: <BookIcon />, label: t('navbar.learningPaths', 'Learning Paths') },
+    { href: '/patients', icon: <DatasetIcon />, label: t('navbar.patients', 'Patients') },
+    { href: '/doctors', icon: <WorkIcon />, label: t('navbar.doctors', 'Doctors') },
+    { href: '/webinars', icon: <VideocamIcon />, label: t('navbar.webinars', 'Webinars') },
     { href: '/mentorship', icon: <ArticleIcon />, label: 'Mentorship' },
     { href: '/research_paper', icon: <ArticleIcon />, label: 'Research Paper' },
     { href: '/diaries', icon: <BookIcon />, label: 'Diaries' },
@@ -392,6 +392,7 @@ export default function Navbar({ route }: { route?: string }) {
             />
             <Typography
               variant="h6"
+              suppressHydrationWarning
               sx={{
                 fontWeight: 700,
                 letterSpacing: 0.5,
@@ -399,7 +400,7 @@ export default function Navbar({ route }: { route?: string }) {
                 color: 'text.primary',
               }}
             >
-              {t('navbar.brand')}
+              {t('navbar.brand', 'MedInternia')}
             </Typography>
           </Box>
 
