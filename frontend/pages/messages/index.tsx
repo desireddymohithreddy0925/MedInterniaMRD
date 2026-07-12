@@ -59,6 +59,8 @@ export default function Messages() {
                   </Badge>
                 </ListItemAvatar>
                 <ListItemText
+                  primaryTypographyProps={{ component: 'div' }}
+                  secondaryTypographyProps={{ component: 'div' }}
                   primary={
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="subtitle2" fontWeight={activeChat === contact.id ? 700 : 500}>
