@@ -75,7 +75,7 @@ export default function RadiologyDemo() {
         <Grid container spacing={4}>
           
           {/* Clinical Context (Sidebar) */}
-          <Grid item xs={12} md={3} sx={{ opacity: isRadMode ? 0.1 : 1, transition: 'opacity 0.3s ease' }}>
+          <Grid size={{ xs: 12, md: 3 }} sx={{ opacity: isRadMode ? 0.1 : 1, transition: 'opacity 0.3s ease' }}>
             <Typography variant="h6" fontWeight={800} sx={{ mb: 2, color: isRadMode ? '#333' : '#0f172a' }}>Clinical Context</Typography>
             <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: isRadMode ? '#111' : '#e2e8f0', bgcolor: isRadMode ? '#050505' : 'white', mb: 3 }}>
               <Typography variant="subtitle2" fontWeight={800} sx={{ color: isRadMode ? '#444' : '#64748b', mb: 0.5 }}>Patient</Typography>
@@ -90,7 +90,7 @@ export default function RadiologyDemo() {
           </Grid>
 
           {/* Diagnostic Image Viewer */}
-          <Grid item xs={12} md={9}>
+          <Grid size={{ xs: 12, md: 9 }}>
             <Box sx={{ 
               width: '100%', 
               height: 600, 
