@@ -77,6 +77,19 @@ const DiariesPage: React.FC = () => {
     console.error(error);
   }
 };
+const handleCreateDiary = async () => {
+    if (!newDiaryTitle) return;
+    try {
+        const diary: any = await createDiary(newDiaryTitle);
+        const normalizedDiary = { ...diary, id: diary.id || diary._id, entries: [] };
+        setDiaries([...diaries, normalizedDiary]);
+    } catch (error) {
+        console.error('Failed to create diary:', error);
+        return;
+    }
+    setShowCreateDiary(false);
+    setNewDiaryTitle('');
+};
     useEffect(() => {
         // Hardcoded sample data for frontend testing
         setProfile({
