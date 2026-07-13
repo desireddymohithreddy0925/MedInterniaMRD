@@ -106,6 +106,7 @@ export default function Jobs() {
   const [authChecked, setAuthChecked] = useState(false);
   const [userType, setUserType] = useState("");
   const [activeTab, setActiveTab] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
   // Saved / Applied states using localStorage
   const [savedJobIds, setSavedJobIds] = useState<string[]>([]);
@@ -168,6 +169,9 @@ export default function Jobs() {
     }
     const currentUserType = storedUser?.userType || getCurrentUserRole() || "";
     setUserType(String(currentUserType).toLowerCase());
+    if (storedUser?._id) {
+      setCurrentUserId(storedUser._id);
+    }
 
     // Load saved / applied jobs from localstorage
     try {
@@ -431,21 +435,33 @@ export default function Jobs() {
                               <Typography variant="caption" color="text.secondary">
                                 Posted: {new Date(j.createdAt || Date.now()).toLocaleDateString()}
                               </Typography>
-                              {j.status === "Open" ? (
-                                <Button 
-                                  variant="contained" 
-                                  color={isApplied ? "success" : "primary"}
-                                  onClick={() => handleApply(j)}
-                                  disabled={isApplied}
-                                  sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                                >
-                                  {isApplied ? "Applied" : "Apply"}
-                                </Button>
-                              ) : (
-                                <Button variant="outlined" disabled sx={{ borderRadius: 2, textTransform: 'none' }}>
-                                  Closed
-                                </Button>
-                              )}
+                              <Stack direction="row" spacing={1}>
+                                {j.postedBy && (typeof j.postedBy === 'string' ? j.postedBy : j.postedBy._id) !== currentUserId && (
+                                  <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => router.push(`/messages?userId=${typeof j.postedBy === 'string' ? j.postedBy : j.postedBy._id}`)}
+                                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                                  >
+                                    Message Recruiter
+                                  </Button>
+                                )}
+                                {j.status === "Open" ? (
+                                  <Button 
+                                    variant="contained" 
+                                    color={isApplied ? "success" : "primary"}
+                                    onClick={() => handleApply(j)}
+                                    disabled={isApplied}
+                                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                                  >
+                                    {isApplied ? "Applied" : "Apply"}
+                                  </Button>
+                                ) : (
+                                  <Button variant="outlined" disabled sx={{ borderRadius: 2, textTransform: 'none' }}>
+                                    Closed
+                                  </Button>
+                                )}
+                              </Stack>
                             </Stack>
                           </CardContent>
                         </Card>
@@ -486,19 +502,31 @@ export default function Jobs() {
                             </Stack>
                             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3 }}>
                               <Chip label={j.status} color={j.status === 'Open' ? 'success' : 'default'} size="small" sx={{ fontWeight: 700 }} />
-                              {j.status === "Open" ? (
-                                <Button 
-                                  variant="contained" 
-                                  color={isApplied ? "success" : "primary"}
-                                  onClick={() => handleApply(j)}
-                                  disabled={isApplied}
-                                  sx={{ borderRadius: 2, textTransform: 'none' }}
-                                >
-                                  {isApplied ? "Applied" : "Apply"}
-                                </Button>
-                              ) : (
-                                <Button variant="outlined" disabled sx={{ borderRadius: 2 }}>Closed</Button>
-                              )}
+                              <Stack direction="row" spacing={1}>
+                                {j.postedBy && (typeof j.postedBy === 'string' ? j.postedBy : j.postedBy._id) !== currentUserId && (
+                                  <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => router.push(`/messages?userId=${typeof j.postedBy === 'string' ? j.postedBy : j.postedBy._id}`)}
+                                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                                  >
+                                    Message Recruiter
+                                  </Button>
+                                )}
+                                {j.status === "Open" ? (
+                                  <Button 
+                                    variant="contained" 
+                                    color={isApplied ? "success" : "primary"}
+                                    onClick={() => handleApply(j)}
+                                    disabled={isApplied}
+                                    sx={{ borderRadius: 2, textTransform: 'none' }}
+                                  >
+                                    {isApplied ? "Applied" : "Apply"}
+                                  </Button>
+                                ) : (
+                                  <Button variant="outlined" disabled sx={{ borderRadius: 2 }}>Closed</Button>
+                                )}
+                              </Stack>
                             </Stack>
                           </CardContent>
                         </Card>

@@ -215,6 +215,14 @@ io.on('connection', (socket) => {
     console.log(`User ${userId} left webinar room: webinar:${webinarId}`);
   });
 
+  socket.on('typing', ({ conversationId, receiverId, isTyping }: { conversationId: string; receiverId: string; isTyping: boolean }) => {
+    io.to(`user:${receiverId}`).emit('typing_status', {
+      conversationId,
+      senderId: userId,
+      isTyping
+    });
+  });
+
   socket.on('disconnect', () => {
     console.log(`Socket disconnected: user ${userId}`);
   });

@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth';
 import { requirePermission } from '../middleware/permissions';
 import {
   getUserProfile,
+  getPublicProfile,
   updateUserProfile,
   getInternScorecard,
   getDoctorMentorSummary,
@@ -21,6 +22,9 @@ const router = Router();
 
 // Get user profile by ID
 router.get('/:userId/profile', authenticate, getUserProfile);
+
+// Get basic public info of any user
+router.get('/:userId/public', authenticate, getPublicProfile);
 
 // Update user profile
 router.put('/:userId/profile', authenticate, updateUserProfile);

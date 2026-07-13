@@ -9,6 +9,14 @@ export const getAuthToken = (): string | null => {
   return null;
 };
 
+export const getSocketUrl = (): string => {
+  const rawUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:3000';
+  return rawUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+};
+
 const ensureApiPath = (baseUrl: string): string => {
   const normalized = baseUrl.replace(/\/+$/, '');
   return normalized.endsWith('/api') ? normalized : `${normalized}/api`;

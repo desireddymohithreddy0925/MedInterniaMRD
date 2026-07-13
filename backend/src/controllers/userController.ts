@@ -1,4 +1,4 @@
-﻿import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { AuthRequest } from '../middleware/auth';
 import User from '../models/User';
@@ -745,5 +745,31 @@ export const getConnections = async (req: AuthRequest, res: Response) => {
     res.json({ success: true, following: me.following, followers: me.followers });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching connections" });
+  }
+};
+
+// Get basic public information of any user
+export const getPublicProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select('firstName lastName profilePicture userType specialization');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    res.json({
+      success: true,
+      data: {
+        user
+      }
+    });
+  } catch (error) {
+    console.error('Get public profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
   }
 };
