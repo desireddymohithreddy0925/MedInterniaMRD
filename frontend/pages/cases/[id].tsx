@@ -354,7 +354,7 @@ export default function CaseDiscussion({ id: propId, modalMode, hideDescription 
 
               return (
                 <Box key={c._id || idx} sx={{ mb: 3 }}>
-                  <Stack direction={isMe ? 'row-reverse' : 'row'} gap={1.5} alignItems="flex-start">
+                  <Stack direction={isMe ? 'row-reverse' : 'row'} gap={1.5} alignItems="flex-start" sx={{ minWidth: 0 }}>
                     <Avatar sx={{ bgcolor: isMe ? 'primary.main' : 'secondary.main', width: 36, height: 36, fontWeight: 700 }}>
                       {initial}
                     </Avatar>
@@ -365,6 +365,7 @@ export default function CaseDiscussion({ id: propId, modalMode, hideDescription 
                         bgcolor: isMe ? 'primary.light' : '#f1f5f9',
                         color: 'text.primary',
                         maxWidth: '85%',
+                        minWidth: 0,
                         boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
                       }}
                     >
@@ -409,17 +410,17 @@ export default function CaseDiscussion({ id: propId, modalMode, hideDescription 
 
                   {/* Replies nesting */}
                   {c.replies && c.replies.length > 0 && openReplies[c._id] && (
-                    <Box sx={{ mt: 1, ml: 6, pl: 2, borderLeft: '2px solid #cbd5e1' }}>
+                    <Box sx={{ mt: 1, ml: { xs: 2, sm: 6 }, pl: { xs: 1, sm: 2 }, borderLeft: '2px solid #cbd5e1', minWidth: 0 }}>
                       {discussions
                         .filter((r: any) => r.replyTo === c._id)
                         .map((r: any, rIdx: number) => {
                           const replyAuthorName = r.author ? `${r.author.firstName || ''} ${r.author.lastName || ''}`.trim() : 'Unknown';
                           return (
-                            <Box key={r._id || rIdx} sx={{ mt: 1.5, display: 'flex', gap: 1 }}>
+                            <Box key={r._id || rIdx} sx={{ mt: 1.5, display: 'flex', gap: 1, minWidth: 0 }}>
                               <Avatar sx={{ width: 28, height: 28, bgcolor: 'divider', fontSize: 13, fontWeight: 700 }}>
                                 {replyAuthorName[0]?.toUpperCase()}
                               </Avatar>
-                              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 3, width: '100%' }}>
+                              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 3, flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
                                 <Typography variant="body2" fontWeight={600} color="text.primary">
                                   {replyAuthorName} <span style={{ fontSize: '10px', opacity: 0.7 }}>({r.author?.userType})</span>
                                 </Typography>
