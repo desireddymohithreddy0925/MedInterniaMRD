@@ -714,6 +714,7 @@ export default function Register() {
                           <TextField
                             select
                             label="Year of Study"
+                            required
                             name="yearOfStudy"
                             fullWidth
                             margin="normal"
