@@ -123,6 +123,7 @@ export default function Navbar({ route }: { route?: string }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'), { noSsr: true });
   const { mode, toggleColorMode } = useContext(ThemeContext);
+  const [mounted, setMounted] = React.useState(false);
 
   const handleHomeNav = () => {
     if (typeof window !== 'undefined') {
@@ -164,6 +165,10 @@ export default function Navbar({ route }: { route?: string }) {
   });
 
   React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
     const token = getAuthToken();
     const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
     if (!token || !userId) {
@@ -202,6 +207,20 @@ export default function Navbar({ route }: { route?: string }) {
         });
     });
   }, [getAuthToken()]);
+
+  if (!mounted) {
+    return (
+      <>
+        <CssBaseline />
+        <Toolbar
+          sx={{
+            minHeight: theme.custom.navbarHeight,
+            visibility: 'hidden',
+          }}
+        />
+      </>
+    );
+  }
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
