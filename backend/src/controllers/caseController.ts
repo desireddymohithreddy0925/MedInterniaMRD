@@ -35,6 +35,25 @@ const publicCaseFilter = {
   ],
 };
 
+// Only case content fields should be editable by the case owner here.
+// Ownership, points, status, moderation, comments, and likes are handled by
+// dedicated flows so they stay protected from mass-assignment payloads.
+const CASE_UPDATABLE_FIELDS = [
+  "title",
+  "description",
+  "symptoms",
+  "patientInfo",
+  "diagnosis",
+  "treatment",
+  "images",
+  "attachments",
+  "tags",
+  "difficulty",
+  "specialization",
+  "isRareDisease",
+  "verifiedDoctorsOnly",
+] as const;
+
 export const scheduleAICasePost = asyncHandler(
   async (req: AuthRequest, res: Response) => {
     const user = req.user as { _id: string; userType?: string } | undefined;
@@ -801,23 +820,21 @@ export const updateCase = asyncHandler(
       throw new AppError("You can only update your own cases", 403);
     }
 
-    const updates = req.body;
-    if (updates.description) {
+    const updates: Partial<ICase> = {};
+    for (const field of CASE_UPDATABLE_FIELDS) {
+      if (req.body[field] !== undefined) {
+        (updates as any)[field] = req.body[field];
+      }
+    }
+
+    if (typeof updates.description === "string" && updates.description) {
       try {
         const result = await extractEntities(updates.description);
-        updates.entities = result.entities;
+        updates.entities = result.entities as any;
       } catch (error) {
         console.error("NER service failed:", error);
       }
     }
-    delete updates.doctor; // Prevent changing the doctor
-    delete updates.comments; // Comments are handled separately
-    delete updates.likes; // Likes are handled separately
-    delete updates.moderationStatus; // Moderation is handled through dedicated endpoints
-    delete updates.moderationReason;
-    delete updates.reviewedBy;
-    delete updates.reviewedAt;
-    delete updates.moderationAuditTrail;
 
     const updatedCase = await Case.findByIdAndUpdate(id, updates, {
       new: true,
