@@ -8,6 +8,8 @@ import User from '../models/User';
 
 // Create a new badge (admin only)
 export const createBadge = async (req: AuthRequest, res: Response) => {
+    console.log("===== CREATE BADGE =====");
+  console.log(req.body);
   try {
     const { name, description, icon, category, criteria, color } = req.body;
 
@@ -73,6 +75,8 @@ export const getAllBadges = async (req: Request, res: Response) => {
 
 // Award badge to user
 export const awardBadge = async (req: AuthRequest, res: Response) => {
+    console.log("===== AWARD BADGE =====");
+  console.log(req.body);
   try {
     const { userId, badgeId, caseId, commentId, metadata } = req.body;
     const verifiedBy = req.user!._id;
@@ -105,9 +109,8 @@ export const awardBadge = async (req: AuthRequest, res: Response) => {
         metadata
       }], { session });
 
-      // Update user's certificate count
       await User.findByIdAndUpdate(userId, {
-        $inc: { certificatesEarned: 1 }
+        $inc: { badgesEarned: 1 }
       }, { session });
 
       await session.commitTransaction();
@@ -253,8 +256,9 @@ export const checkAndAwardAutoBadges = async (userId: string) => {
 
         await userBadge.save();
         await User.findByIdAndUpdate(userId, {
-          $inc: { certificatesEarned: 1 }
+          $inc: { badgesEarned: 1 }
         });
+        
       }
     }
   } catch (error) {

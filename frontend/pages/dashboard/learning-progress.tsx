@@ -213,7 +213,7 @@ export default function LearningProgress() {
                       </Avatar>
                       <Box>
                         <Typography variant="body2" fontWeight={700}>Badges Earned</Typography>
-                        <Typography variant="caption" color="text.secondary">{(user.badges || []).length} Badges total</Typography>
+                        <Typography variant="caption" color="text.secondary">{user.badgesEarned  || 0} Badges total</Typography>
                       </Box>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={2}>
