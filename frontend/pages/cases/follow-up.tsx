@@ -15,7 +15,7 @@ function CaseFollowUp() {
     setSuccess('');
     try {
       const token = localStorage.getItem('token');
-      await api.post(`/cases/${caseId}/follow-ups`, { text: followUp }, {
+      await api.post(`/cases/${caseId}/follow-ups`, { content: followUp }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccess('Follow-up added successfully!');
@@ -42,4 +42,4 @@ function CaseFollowUp() {
     </Container>
   );
 }
-export default withAuth(CaseFollowUp);  
+export default withAuth(CaseFollowUp);
