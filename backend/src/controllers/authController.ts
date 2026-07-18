@@ -55,9 +55,25 @@ const consumeOtp = async (
   const isMatch = await bcrypt.compare(submittedOtp, record.otpHash);
 
   if (!isMatch) {
-    record.attempts += 1;
-    await record.save();
-    return { valid: false, message: 'Invalid OTP' };
+
+   const updated = await Otp.findOneAndUpdate(
+     { _id: record._id, attempts: { $lt: OTP_MAX_ATTEMPTS } },
+     { $inc: { attempts: 1 } },
+     { new: true }
+   );
+
+   if (!updated) {
+     
+     await Otp.deleteOne({ _id: record._id });
+     return { valid: false, message: 'Too many incorrect attempts. Please request a new OTP.' };
+   }
+
+   if (updated.attempts >= OTP_MAX_ATTEMPTS) {
+     await Otp.deleteOne({ _id: updated._id });
+     return { valid: false, message: 'Too many incorrect attempts. Please request a new OTP.' };
+   }
+
+   return { valid: false, message: 'Invalid OTP' };
   }
 
   await Otp.deleteOne({ _id: record._id });

@@ -210,15 +210,48 @@ describe("Auth Controller", () => {
       };
       mockedOtp.findOne.mockResolvedValue(otpMock as any);
       (mockedBcrypt.compare as jest.Mock).mockResolvedValue(false);
+      (mockedOtp.findOneAndUpdate as jest.Mock).mockResolvedValue({
+        ...otpMock,
+        attempts: 2,
+      });
 
       const req = mockRequest({ email: "test@test.com", otp: "wrong", newPassword: "newpwd" });
       const res = mockResponse();
       const next = jest.fn();
 
       await expect(resetPassword(req as any, res as any, next)).rejects.toThrow("Invalid OTP");
-      expect(otpMock.attempts).toBe(2);
-      expect(otpMock.save).toHaveBeenCalled();
+      expect(mockedOtp.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: "otp-1", attempts: { $lt: 5 } },
+        { $inc: { attempts: 1 } },
+        { new: true }
+      );
     });
+
+    it("locks out after the OTP attempts cap is reached", async () => {
+      const otpMock = {
+        _id: "otp-1",
+        expiresAt: new Date(Date.now() + 10000),
+        attempts: 4,
+        otpHash: "hash",
+      };
+      mockedOtp.findOne.mockResolvedValue(otpMock as any);
+      (mockedBcrypt.compare as jest.Mock).mockResolvedValue(false);
+      (mockedOtp.findOneAndUpdate as jest.Mock).mockResolvedValue({
+        ...otpMock,
+        attempts: 5,
+      });
+      mockedOtp.deleteOne.mockResolvedValue({} as any);
+
+      const req = mockRequest({ email: "test@test.com", otp: "wrong", newPassword: "newpwd" });
+      const res = mockResponse();
+      const next = jest.fn();
+
+      await expect(resetPassword(req as any, res as any, next)).rejects.toThrow(
+        "Too many incorrect attempts"
+      );
+      expect(mockedOtp.deleteOne).toHaveBeenCalledWith({ _id: "otp-1" });
+    });
+
 
     it("resets password successfully on valid OTP", async () => {
       const otpMock = {

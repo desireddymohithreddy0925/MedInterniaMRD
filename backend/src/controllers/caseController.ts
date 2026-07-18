@@ -1604,21 +1604,32 @@ export const solveCase = asyncHandler(
       });
     }
 
-    // Update user history
-    userDoc.solvedCases = [...solvedList, caseData._id as any];
-    userDoc.casesAnalyzed = (userDoc.casesAnalyzed || 0) + 1;
-
     // Award 5 points for solving
     const pointsAwarded = 5;
-    userDoc.points = (userDoc.points || 0) + pointsAwarded;
-    await userDoc.save();
+   
+    const updatedUser = await User.findOneAndUpdate(
+    { _id: userDoc._id, solvedCases: { $ne: caseData._id } },
+    {
+      $addToSet: { solvedCases: caseData._id },
+      $inc: { casesAnalyzed: 1, points: pointsAwarded }
+    },
+    { new: true }
+  );
+
+if (!updatedUser) {
+    return res.json({
+      success: true,
+      message: "Case is already marked as solved",
+      data: { pointsAwarded: 0, casesAnalyzed: userDoc.casesAnalyzed }
+    });
+ }
 
     res.json({
       success: true,
       message: "Case successfully marked as solved!",
       data: {
         pointsAwarded,
-        casesAnalyzed: userDoc.casesAnalyzed
+        casesAnalyzed: updatedUser.casesAnalyzed
       }
     });
   }
