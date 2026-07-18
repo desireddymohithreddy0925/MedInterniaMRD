@@ -45,6 +45,7 @@ passwordResetExpires?: Date;
   peerReviewsGiven: number;
   peerReviewsReceived: number;
   certificatesEarned: number;
+  badgesEarned: number;
   linkedInProfile?: string;
   githubProfile?: string;
   orcidId?: string;
@@ -248,6 +249,11 @@ passwordResetExpires: {
     type: Number,
     default: 0,
     min: [0, 'Certificates earned cannot be negative']
+  },
+  badgesEarned: {
+    type: Number,
+    default: 0,
+    min: [0, 'Badges earned cannot be negative']
   },
   linkedInProfile: {
     type: String,
