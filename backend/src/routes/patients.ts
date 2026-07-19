@@ -33,9 +33,11 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const currentUser = req.user!;
+    const isOwnPatientProfile =
+      currentUser.userType === 'patient' && (currentUser._id as any).toString() === id;
+    const canReadPatient = ['doctor', 'admin'].includes(currentUser.userType);
 
-    // Patients can only access their own profile
-    if (currentUser.userType === 'patient' && (currentUser._id as any).toString() !== id) {
+    if (!isOwnPatientProfile && !canReadPatient) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -76,9 +78,11 @@ router.put('/:id/medical-info', authenticate, async (req: AuthRequest, res) => {
     const { id } = req.params;
     const currentUser = req.user!;
     const { medicalHistory, allergies, emergencyContact } = req.body;
+    const isOwnPatientProfile =
+      currentUser.userType === 'patient' && (currentUser._id as any).toString() === id;
+    const canUpdatePatient = ['doctor', 'admin'].includes(currentUser.userType);
 
-    // Patients can only update their own profile
-    if (currentUser.userType === 'patient' && (currentUser._id as any).toString() !== id) {
+    if (!isOwnPatientProfile && !canUpdatePatient) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'

@@ -672,9 +672,12 @@ export const awardPointsToIntern = async (req: AuthRequest, res: Response) => {
     if (!intern || intern.userType !== 'intern') {
       return res.status(404).json({ success: false, message: 'Intern not found.' });
     }
-    intern.points = (intern.points || 0) + points;
-    await intern.save();
-    res.json({ success: true, points: intern.points });
+    const updatedIntern = await User.findByIdAndUpdate(
+    internId,
+    { $inc: { points } },
+    { new: true }
+  );
+  res.json({ success: true, points: updatedIntern?.points ?? 0 });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }

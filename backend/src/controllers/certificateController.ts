@@ -182,9 +182,8 @@ export const getCertificateById = async (req: AuthRequest, res: Response) => {
       requesterId === doctorId ||
       requester.userType === 'admin';
 
-    // Increment download count
-    certificate.downloadCount += 1;
-    await certificate.save();
+   // Increment download count atomically so concurrent downloads aren't lost
+  await Certificate.updateOne({ _id: certificate._id }, { $inc: { downloadCount: 1 } });
 
     if (isOwnerOrIssuer) {
       // Full detail view for the intern who owns it, the doctor who issued it, or an admin
@@ -218,6 +217,47 @@ export const getCertificateById = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Get certificate error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Verify a certificate from the public URL included in exported certificate data
+export const getPublicCertificateVerification = async (req: Request, res: Response) => {
+  try {
+    const { certificateId } = req.params;
+    const certificate = await Certificate.findOne({ certificateId, isVerified: true })
+      .populate('intern', 'firstName lastName')
+      .populate('doctor', 'firstName lastName specialization isVerifiedDoctor');
+
+    if (!certificate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Certificate not found or not verified',
+        data: { isValid: false }
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Certificate verified successfully',
+      data: {
+        isValid: true,
+        certificate: {
+          id: certificate.certificateId,
+          intern: certificate.intern,
+          doctor: certificate.doctor,
+          title: certificate.title,
+          issuedAt: certificate.createdAt,
+          casesReviewed: certificate.casesReviewed,
+          pointsEarned: certificate.pointsEarned
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Public certificate verification error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

@@ -73,11 +73,15 @@ router.post('/:internId/award-points', authenticate, requirePermission('user:awa
 // Follow a user
 router.post('/follow', authenticate, followUser);
 
+// Manage connections for the authenticated user
+router.get('/connections', authenticate, getConnections);
+router.post('/unfollow', authenticate, unfollowUser);
+
 // Unfollow a user
 router.delete('/:userId/following/:followId', authenticate, unfollowUser);
 
 // Get user connections (followers/following)
-router.get('/:userId/connections', getConnections);
+router.get('/:userId/connections', authenticate, getConnections);
 
 // Get saved items for user profile
 router.get('/:userId/saved', authenticate, getSavedItems);
