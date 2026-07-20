@@ -138,6 +138,7 @@ export default function Jobs() {
   // Filter states
   const [filterSpecialty, setFilterSpecialty] = useState<string[]>([]);
   const [filterExperience, setFilterExperience] = useState<string>("");
+  const [filterLocation, setFilterLocation] = useState<string>("");
   const [filterRemote, setFilterRemote] = useState<boolean>(false);
   const [filterVisa, setFilterVisa] = useState<boolean>(false);
 
@@ -216,6 +217,7 @@ export default function Jobs() {
     if (filterExperience) params.maxExperience = filterExperience;
     if (filterRemote) params.isRemote = true;
     if (filterVisa) params.visaSponsorship = true;
+    if (filterLocation.trim()) params.location = filterLocation.trim();
 
     api
       .get("/jobs", { params })
@@ -237,7 +239,7 @@ export default function Jobs() {
         setOriginalJobs([]);
         setLoading(false);
       });
-  }, [authChecked, filterSpecialty, filterExperience, filterRemote, filterVisa, smartSearchActive]);
+  }, [authChecked, filterSpecialty, filterExperience, filterLocation, filterRemote, filterVisa, smartSearchActive]);
 
   useEffect(() => {
   if (!currentUserId) return;
@@ -346,9 +348,12 @@ export default function Jobs() {
                   onRemoteChange={setFilterRemote}
                   visaSponsorship={filterVisa}
                   onVisaChange={setFilterVisa}
+                  location={filterLocation}
+                  onLocationChange={setFilterLocation}
                   onClear={() => {
                     setFilterSpecialty([]);
                     setFilterExperience('');
+                    setFilterLocation('');
                     setFilterRemote(false);
                     setFilterVisa(false);
                   }}
