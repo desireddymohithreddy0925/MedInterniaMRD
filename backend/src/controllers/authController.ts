@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import User, { IUser } from '../models/User';
 import Otp from '../models/Otp';
 import transporter from '../utils/mailer';
-import { generateToken, generateRefreshToken } from '../utils/jwt';
+import { generateToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { AuthRequest, blacklistToken } from '../middleware/auth';
 import { uploadProfileImage } from '../utils/cloudinary';
 import { asyncHandler } from "../utils/asyncHandler";
@@ -289,6 +289,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
   res.cookie('token', token, cookieOptions);
   res.cookie('auth_status', 'authenticated', { ...cookieOptions, httpOnly: false });
+  res.cookie('refresh_token', refreshToken, cookieOptions);
 
   res.status(201).json({
     success: true,
@@ -418,6 +419,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   res.cookie('token', token, cookieOptions);
   res.cookie('auth_status', 'authenticated', { ...cookieOptions, httpOnly: false });
+  res.cookie('refresh_token', refreshToken, cookieOptions);
 
   res.json({
     success: true,
@@ -685,3 +687,57 @@ export const syncOrcidPublications = asyncHandler(async (req: AuthRequest, res: 
     throw new AppError("Failed to sync ORCID publications. Please check your ORCID iD.", 500);
   }
 });
+
+// Issue a new access token from a valid refresh token without forcing the user
+// to log in again. The refresh token is sent as an HTTP-only cookie (set on
+// login/register) or, as a fallback, in the JSON body. This keeps sessions
+// alive past the short-lived access token expiry.
+export const refreshToken = asyncHandler(
+  async (req: Request, res: Response) => {
+    const cookieToken = req.cookies?.refresh_token;
+    const bodyToken = req.body?.refreshToken;
+    const incomingRefreshToken = cookieToken || bodyToken;
+
+    if (!incomingRefreshToken) {
+      throw new AppError('Refresh token is required', 401);
+    }
+
+    const decoded = verifyRefreshToken(incomingRefreshToken);
+    if (!decoded) {
+      throw new AppError('Invalid or expired refresh token', 401);
+    }
+
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) {
+      throw new AppError('User not found', 401);
+    }
+    if (!user.isActive) {
+      throw new AppError('Account is deactivated', 401);
+    }
+
+    const tokenPayload = {
+      userId: (user._id as any).toString(),
+      email: user.email,
+      userType: user.userType,
+    };
+    const newAccessToken = generateToken(tokenPayload);
+    const newRefreshToken = generateRefreshToken(tokenPayload);
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+    res.cookie('refresh_token', newRefreshToken, cookieOptions);
+
+    res.json({
+      success: true,
+      message: 'Token refreshed successfully',
+      data: {
+        token: newAccessToken,
+        refreshToken: newRefreshToken,
+      },
+    });
+  },
+);
