@@ -221,6 +221,15 @@ export default function Navbar({ route }: { route?: string }) {
     });
   }, [getAuthToken()]);
 
+  /* SCROLL PROGRESSBAR */
+  const { scrollYProgress } = useScroll();
+
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 20,
+    restDelta: 0.001,
+  });
+
   if (!mounted) {
     return (
       <>
@@ -287,15 +296,6 @@ export default function Navbar({ route }: { route?: string }) {
     { href: '/diaries', icon: <BookIcon />, label: 'Diaries' },
     { href: '/faq', icon: <HelpIcon />, label: 'FAQ' },
   ];
-
-  /* SCROLL PROGRESSBAR */
-  const { scrollYProgress } = useScroll();
-
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 20,
-    restDelta: 0.001,
-  });
 
   const searchBar = (
     <Box sx={{ width: '100%', position: 'relative' }}>
