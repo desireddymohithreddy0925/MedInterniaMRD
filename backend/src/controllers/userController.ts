@@ -147,8 +147,9 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
     if (!req.user || (String(req.user._id) !== userId && req.user.userType !== 'admin')) {
       return res.status(403).json({
         success: false,
-        message: 'Forbidden: cannot view other users\' profiles'
+        message: 'Forbidden: cannot view other users\'profiles'
       });
+     
     }
 
     const user = await User.findById(userId)
@@ -230,7 +231,10 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
     });
   }
 };
-
+ export const getCurrentUserProfile = async (req: AuthRequest, res: Response) => {
+  req.params.userId = String(req.user!._id);
+  return getUserProfile(req, res);
+};
 const ALLOWED_UPDATE_FIELDS = [
   'firstName', 'lastName', 'phone', 'dateOfBirth', 'gender', 'address',
   'bio', 'profilePicture', 'linkedInProfile', 'githubProfile',
